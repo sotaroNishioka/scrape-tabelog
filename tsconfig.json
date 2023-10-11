@@ -1,13 +1,7 @@
-//     "target": "es2016",
-//     "module": "commonjs"
-//   },
-//   "files": ["src/**/*"]
-// }
-
 {
   "compilerOptions": {
     "target": "es2016",
-    "module": "commonjs"
-  },
-  "files": ["src/**/*"]
+    "module": "commonjs",
+    "strictNullChecks": true
+  }
 }
