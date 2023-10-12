@@ -15,11 +15,17 @@ interface Detail {
   code: string
   prefectureRoma: string
   prefectureName: string
+  prefectureId: string
 }
 
 const getDoms = async (prefecture: Prefecture): Promise<JSDOM> => {
   // ページ取得
-  const response = await fetch(`https://tabelog.com/${prefecture.roma}/`)
+  let response
+  try {
+    response = await fetch(`https://tabelog.com/${prefecture.roma}/`)
+  } catch (err) {
+    console.error(err)
+  }
   const body = await response.text()
   const dom = new JSDOM(body)
   return dom
@@ -72,7 +78,8 @@ const getDetails = (linkContents: Element[], prefecture: Prefecture): Detail[] =
       url: hrefVal,
       code,
       prefectureRoma: prefecture.roma,
-      prefectureName: prefecture.kanji
+      prefectureName: prefecture.kanji,
+      prefectureId: prefecture.id
     }
     return obj
   })
@@ -92,6 +99,26 @@ const getPrefectures = async (): Promise<Prefecture[]> => {
   }
 }
 
+const insertDetails = async (details: Detail[]): Promise<void> => {
+  const client = await connect()
+  try {
+    const values = details.map((detail) => {
+      return `('${detail.name}', '${detail.url}', '${detail.code}', '${detail.prefectureId}')`
+    }).join(',')
+    await client.query(`
+    INSERT INTO 
+      city(name, url, code, prefecture_id)
+      VALUES ${values}
+      ON CONFLICT (url) DO NOTHING
+    `)
+  } catch (err) {
+    console.error(err)
+    throw new Error('DB Error')
+  } finally {
+    await client.end()
+  }
+}
+
 const main = async (): Promise<void> => {
   const prefectures = await getPrefectures()
   const detailings = prefectures.map(async (prefecture) => {
@@ -101,7 +128,7 @@ const main = async (): Promise<void> => {
     return details
   })
   const details = (await Promise.all(detailings)).flat()
-  console.log(details)
+  await insertDetails(details)
 }
 
 void main()
