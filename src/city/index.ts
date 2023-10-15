@@ -32,8 +32,16 @@ const getDomsAsync = async (area: AreaDb): Promise<JSDOM> => {
 const getLinkContents = (dom: JSDOM): Element[] => {
   const tab = dom.window.document.body.querySelector('#tabs-panel-balloon-pref-area')
   if (tab === null) {
-    console.error(dom.window.document.body.innerHTML)
-    throw new Error('#tabs-panel-balloon-pref-area is not found')
+    const sublist = dom.window.document.body.querySelectorAll('.list-balloon__sub-list')
+    const items = Array.from(sublist).map((sub) => {
+      const linkItem = sub.querySelectorAll('.list-balloon__sub-list-item')
+      if (linkItem === null) {
+        throw new Error('.list-balloon__sub-list-item is not found')
+      }
+      return Array.from(linkItem)
+    })
+    const res = items.flat()
+    return res
   }
   // エリアから探すの要素取得
   const cities = tab.querySelector('.list-balloon__list')
@@ -57,7 +65,7 @@ const getLinkContents = (dom: JSDOM): Element[] => {
 }
 
 const getDetails = (linkContents: Element[], area: AreaDb): City[] => {
-  const res = linkContents.map((link) => {
+  const res = linkContents.map((link): City | undefined => {
     const aDom = link.querySelector('.c-link-arrow')
     if (aDom === null) {
       throw new Error('.c-link-arrow is not found')
@@ -66,10 +74,11 @@ const getDetails = (linkContents: Element[], area: AreaDb): City[] => {
     if (hrefVal === null) {
       throw new Error('hrefVal is not found')
     }
-    const code = hrefVal.split('/')[4]
+    const code = hrefVal.split('/')[5]
     const nameDom = aDom.querySelector('span')
     if (nameDom === null) {
-      throw new Error('nameDom is not found')
+      // eslint-disable-next-line array-callback-return
+      return
     }
     const nameVal = nameDom?.textContent === null ? '' : nameDom.textContent
     const obj = {
@@ -81,7 +90,8 @@ const getDetails = (linkContents: Element[], area: AreaDb): City[] => {
     }
     return obj
   })
-  return res
+  const filtered = res.filter((x) => x !== undefined) as City[]
+  return filtered
 }
 
 const insertCitiesAsync = async (details: City[]): Promise<void> => {
@@ -113,7 +123,6 @@ const getCitiesAsync = async (): Promise<void> => {
     return details
   })
   const details = (await Promise.all(detailsRaw)).flat()
-  console.log(details)
   await insertCitiesAsync(details)
 }
 
