@@ -2,6 +2,7 @@ import fetch from 'node-fetch'
 import { JSDOM } from 'jsdom'
 import { connect } from '../db'
 import { type Area, type PrefectureDb } from '../types'
+import getRestaurantCount from '../utils/getRestaurantCount'
 
 // 都道府県ページの取得
 const getDomsAsync = async (prefecture: PrefectureDb): Promise<JSDOM> => {
@@ -90,9 +91,29 @@ const insertAreasAsync = async (details: Area[]): Promise<void> => {
   }
 }
 
+// prefectureのレストラン数を取得し、DBの値を更新する。挿入する値が既存の値と同じ場合は更新しない
+const insertPrefetureCountAsync = async (prefecture: PrefectureDb, dom: JSDOM): Promise<void> => {
+  const count = getRestaurantCount(dom)
+  const client = await connect()
+  try {
+    await client.query(`
+    UPDATE prefecture
+    SET restaurant_count = ${count}
+      WHERE id = '${prefecture.id}'
+        AND restaurant_count != ${count}
+    `)
+  } catch (err) {
+    console.error(err)
+    throw new Error('DB Error')
+  } finally {
+    await client.end()
+  }
+}
+
 const getAreasAsync = async (prefectures: PrefectureDb[]): Promise<Area[]> => {
   const detailsRaw = prefectures.map(async (prefecture) => {
     const dom = await getDomsAsync(prefecture)
+    await insertPrefetureCountAsync(prefecture, dom)
     const linkContents = getLinkContents(dom)
     const details = getDetails(linkContents, prefecture)
     return details

@@ -2,6 +2,7 @@ import fetch from 'node-fetch'
 import { JSDOM } from 'jsdom'
 import { connect } from '../db'
 import { type AreaDb, type City } from '../types'
+import getRestaurantCount from '../utils/getRestaurantCount'
 
 const getAreas = async (): Promise<AreaDb[]> => {
   const client = await connect()
@@ -114,10 +115,30 @@ const insertCitiesAsync = async (details: City[]): Promise<void> => {
   }
 }
 
+// prefectureのレストラン数を取得し、DBの値を更新する。挿入する値が既存の値と同じ場合は更新しない
+const insertAreaCountAsync = async (area: AreaDb, dom: JSDOM): Promise<void> => {
+  const count = getRestaurantCount(dom)
+  const client = await connect()
+  try {
+    await client.query(`
+    UPDATE prefecture
+    SET restaurant_count = ${count}
+      WHERE id = '${area.id}'
+        AND restaurant_count != ${count}
+    `)
+  } catch (err) {
+    console.error(err)
+    throw new Error('DB Error')
+  } finally {
+    await client.end()
+  }
+}
+
 const getCitiesAsync = async (): Promise<void> => {
   const areas = await getAreas()
   const detailsRaw = areas.map(async (area) => {
     const dom = await getDomsAsync(area)
+    await insertAreaCountAsync(area, dom)
     const linkContents = getLinkContents(dom)
     const details = getDetails(linkContents, area)
     return details
