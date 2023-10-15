@@ -1,10 +1,11 @@
 import { getPrefectures } from './prefecture'
-import getAreas from './area'
+import getAreasAsync from './area'
+import getCitiesAsync from './city'
 
 const main = async (): Promise<void> => {
   const prefectures = await getPrefectures()
-  const areaDetails = await getAreas(prefectures)
-  console.log(areaDetails.length)
+  await getAreasAsync(prefectures)
+  await getCitiesAsync()
 }
 
 void main()

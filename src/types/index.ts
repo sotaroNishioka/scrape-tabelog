@@ -1,8 +1,8 @@
-export interface Prefecture {
+export interface PrefectureDb {
+  id: string
   kanji: string
   yomi: string
   roma: string
-  id: string
 }
 
 export interface Area {
@@ -10,6 +10,15 @@ export interface Area {
   url: string
   code: string
   prefectureId: string
+}
+
+export interface AreaDb {
+  id: string
+  name: string
+  url: string
+  code: string
+  prefecture_id: string
+
 }
 
 export interface City {
@@ -20,6 +29,14 @@ export interface City {
   areaId: string
 }
 
+export interface CityDb {
+  id: string
+  name: string
+  url: string
+  code: string
+  prefecture_id: string
+  area_id: string
+}
 export interface Station {
   name: string
   url: string
@@ -27,4 +44,14 @@ export interface Station {
   prefectureId: string
   areaId: string
   cityId: string
+}
+
+export interface StationDb {
+  id: string
+  name: string
+  url: string
+  code: string
+  prefecture_id: string
+  area_id: string
+  city_id: string
 }

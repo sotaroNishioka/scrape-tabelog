@@ -1,16 +1,10 @@
 import { connect } from '../db'
+import { type PrefectureDb } from '../types'
 
-interface Prefecture {
-  kanji: string
-  yomi: string
-  roma: string
-  id: string
-}
-
-export const getPrefectures = async (): Promise<Prefecture[]> => {
+export const getPrefectures = async (): Promise<PrefectureDb[]> => {
   const client = await connect()
   try {
-    const { rows } = await client.query('SELECT id, kanji, yomi, roma FROM prefecture') as { rows: Prefecture[] }
+    const { rows } = await client.query('SELECT id, kanji, yomi, roma FROM prefecture') as { rows: PrefectureDb[] }
     return rows
   } catch (err) {
     console.error(err)

@@ -1,14 +1,26 @@
 import fetch from 'node-fetch'
 import { JSDOM } from 'jsdom'
 import { connect } from '../db'
-import { type Area, type PrefectureDb } from '../types'
+import { type AreaDb, type City } from '../types'
 
-// 都道府県ページの取得
-const getDomsAsync = async (prefecture: PrefectureDb): Promise<JSDOM> => {
+const getAreas = async (): Promise<AreaDb[]> => {
+  const client = await connect()
+  try {
+    const { rows } = await client.query('SELECT id, name, url, code, prefecture_id FROM area') as { rows: AreaDb[] }
+    return rows
+  } catch (err) {
+    console.error(err)
+    throw new Error('DB Error')
+  } finally {
+    await client.end()
+  }
+}
+
+const getDomsAsync = async (area: AreaDb): Promise<JSDOM> => {
   // ページ取得
   let response
   try {
-    response = await fetch(`https://tabelog.com/${prefecture.roma}/`)
+    response = await fetch(area.url)
   } catch (err) {
     console.error(err)
   }
@@ -20,6 +32,7 @@ const getDomsAsync = async (prefecture: PrefectureDb): Promise<JSDOM> => {
 const getLinkContents = (dom: JSDOM): Element[] => {
   const tab = dom.window.document.body.querySelector('#tabs-panel-balloon-pref-area')
   if (tab === null) {
+    console.error(dom.window.document.body.innerHTML)
     throw new Error('#tabs-panel-balloon-pref-area is not found')
   }
   // エリアから探すの要素取得
@@ -43,7 +56,7 @@ const getLinkContents = (dom: JSDOM): Element[] => {
   return res
 }
 
-const getDetails = (linkContents: Element[], prefecture: PrefectureDb): Area[] => {
+const getDetails = (linkContents: Element[], area: AreaDb): City[] => {
   const res = linkContents.map((link) => {
     const aDom = link.querySelector('.c-link-arrow')
     if (aDom === null) {
@@ -63,22 +76,23 @@ const getDetails = (linkContents: Element[], prefecture: PrefectureDb): Area[] =
       name: nameVal,
       url: hrefVal,
       code,
-      prefectureId: prefecture.id
+      prefectureId: area.prefecture_id,
+      areaId: area.id
     }
     return obj
   })
   return res
 }
 
-const insertAreasAsync = async (details: Area[]): Promise<void> => {
+const insertCitiesAsync = async (details: City[]): Promise<void> => {
   const client = await connect()
   try {
     const values = details.map((detail) => {
-      return `('${detail.name}', '${detail.url}', '${detail.code}', '${detail.prefectureId}')`
+      return `('${detail.name}', '${detail.url}', '${detail.code}', '${detail.prefectureId}', '${detail.areaId}')`
     }).join(',')
     await client.query(`
       INSERT INTO 
-        area(name, url, code, prefecture_id)
+        city(name, url, code, prefecture_id, area_id)
         VALUES ${values}
         ON CONFLICT (url) DO NOTHING
       `)
@@ -90,16 +104,17 @@ const insertAreasAsync = async (details: Area[]): Promise<void> => {
   }
 }
 
-const getAreasAsync = async (prefectures: PrefectureDb[]): Promise<Area[]> => {
-  const detailsRaw = prefectures.map(async (prefecture) => {
-    const dom = await getDomsAsync(prefecture)
+const getCitiesAsync = async (): Promise<void> => {
+  const areas = await getAreas()
+  const detailsRaw = areas.map(async (area) => {
+    const dom = await getDomsAsync(area)
     const linkContents = getLinkContents(dom)
-    const details = getDetails(linkContents, prefecture)
+    const details = getDetails(linkContents, area)
     return details
   })
   const details = (await Promise.all(detailsRaw)).flat()
-  await insertAreasAsync(details)
-  return details
+  console.log(details)
+  await insertCitiesAsync(details)
 }
 
-export default getAreasAsync
+export default getCitiesAsync
