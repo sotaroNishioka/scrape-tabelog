@@ -18,7 +18,6 @@ export interface AreaDb {
   url: string
   code: string
   prefecture_id: string
-
 }
 
 export interface City {
