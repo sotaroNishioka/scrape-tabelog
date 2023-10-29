@@ -3,17 +3,6 @@ import { connect } from '../db'
 import { type AreaDb, type City } from '../types'
 import { getAreaDom, getAreas } from '../area'
 
-const getDomsAsync = async (): Promise<Array<{ area: AreaDb, dom: JSDOM }>> => {
-  const areas = await getAreas()
-  // ページ取得
-  const asyncDoms = areas.map(async (x) => {
-    const dom = await getAreaDom(x)
-    return { area: x, dom }
-  })
-  const doms = await Promise.all(asyncDoms)
-  return doms
-}
-
 const getDetails = (arg: { dom: JSDOM, area: AreaDb }): City[] => {
   const { dom, area } = arg
   // エリアから探すのタブを取得
@@ -107,11 +96,62 @@ const insertCitiesAsync = async (details: City[]): Promise<void> => {
   }
 }
 
+const insertAreaCount = async (arg: { count: number, id: string }): Promise<void> => {
+  const client = await connect()
+  try {
+    await client.query(`
+      UPDATE area
+      SET restaurant_count = ${arg.count}
+      WHERE id = '${arg.id}'
+      `)
+  } catch (err) {
+    console.error(err)
+    throw new Error('DB Error')
+  } finally {
+    await client.end()
+  }
+}
+
+const countAreaRestaurant = (dom: JSDOM): number => {
+  const countArea = dom.window.document.body.querySelector('.list-controll')
+  if (countArea === null) {
+    return 0
+  }
+  const countWrap = countArea.querySelector('.c-page-count')
+  if (countWrap === null) {
+    return 0
+  }
+  const countItems = Array.from(countWrap.querySelectorAll('.c-page-count__num'))
+  if (countItems.length === 0) {
+    return 0
+  }
+  const countText = countItems[countItems.length - 1].getElementsByTagName('strong')[0].textContent
+  if (countText === null) {
+    return 0
+  }
+  const countNum = Number(countText.replace(/,/g, ''))
+  if (Number.isNaN(countNum)) {
+    return 0
+  }
+  return countNum
+}
+
 export const asyncUpdateCities = async (): Promise<void> => {
-  const doms = await getDomsAsync()
-  const details = doms.map((x) => {
-    const res = getDetails(x)
-    return res
-  }).flat()
-  await insertCitiesAsync(details)
+  console.log('start asyncUpdateCities')
+  const areas = await getAreas()
+
+  for (const [index, area] of Object.entries(areas)) {
+    const dom = await getAreaDom(area)
+    const count = countAreaRestaurant(dom)
+    const details = getDetails({ dom, area })
+
+    await Promise.all([
+      insertAreaCount({ count, id: area.id }),
+      insertCitiesAsync(details)
+    ])
+
+    console.log(`insertCitiesCount index = ${index} is done`)
+    console.log(`${area.name} has ${count} restaurants`)
+    console.log(`${area.name} has ${details.length} cities`)
+  }
 }

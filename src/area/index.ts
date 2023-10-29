@@ -4,20 +4,7 @@ import { getPrefectures, getPrefecturesDom } from '../prefecture'
 import { connect } from '../db'
 import fetch from 'node-fetch'
 
-// 都道府県ページの取得
-const getDomsAsync = async (): Promise<Array<{ id: string, dom: JSDOM }>> => {
-  // ページ取得
-  const prefectures = await getPrefectures()
-  const asyncPrefectureDoms = prefectures.map(async (x) => {
-    const dom = await getPrefecturesDom(x.roma)
-    const id = x.id
-    return { id, dom }
-  })
-  const prefectureDoms = await Promise.all(asyncPrefectureDoms)
-  return prefectureDoms
-}
-
-const getDetails = async (prefecture: { id: string, dom: JSDOM }): Promise<Area[]> => {
+const getDetails = (prefecture: { id: string, dom: JSDOM }): Area[] => {
   const { id, dom } = prefecture
   // タブ取得
   const tab = dom.window.document.body.querySelector('#tabs-panel-balloon-pref-area')
@@ -91,13 +78,63 @@ const insertAreasAsync = async (details: Area[]): Promise<void> => {
   }
 }
 
+const insertPrefectureCount = async (arg: { count: number, id: string }): Promise<void> => {
+  const client = await connect()
+  try {
+    await client.query(`
+      UPDATE prefecture
+      SET restaurant_count = ${arg.count}
+      WHERE id = '${arg.id}'
+      `)
+  } catch (err) {
+    console.error(err)
+    throw new Error('DB Error')
+  } finally {
+    await client.end()
+  }
+}
+
+const countPrefectureRestaurant = (dom: JSDOM): number => {
+  const countArea = dom.window.document.body.querySelector('.list-controll')
+  if (countArea === null) {
+    return 0
+  }
+  const countWrap = countArea.querySelector('.c-page-count')
+  if (countWrap === null) {
+    return 0
+  }
+  const countItems = Array.from(countWrap.querySelectorAll('.c-page-count__num'))
+  if (countItems.length === 0) {
+    return 0
+  }
+  const countText = countItems[countItems.length - 1].getElementsByTagName('strong')[0].textContent
+  if (countText === null) {
+    return 0
+  }
+  const countNum = Number(countText.replace(/,/g, ''))
+  if (Number.isNaN(countNum)) {
+    return 0
+  }
+  return countNum
+}
+
 export const asyncUpdateAreas = async (): Promise<void> => {
-  const doms = await getDomsAsync()
-  const asyncAreaDetails = doms.map(async (x) => {
-    return await getDetails(x)
-  })
-  const areaDetails = (await Promise.all(asyncAreaDetails)).flat()
-  await insertAreasAsync(areaDetails)
+  console.log('start asyncUpdateAreas')
+  const prefectures = await getPrefectures()
+
+  for (const [index, prefecture] of Object.entries(prefectures)) {
+    const dom = await getPrefecturesDom(prefecture.roma)
+    const count = countPrefectureRestaurant(dom)
+    const details = getDetails({ dom, id: prefecture.id })
+
+    await Promise.all([
+      insertAreasAsync(details),
+      insertPrefectureCount({ count, id: prefecture.id })
+    ])
+    console.log(`insertAreaCount index = ${index} is done`)
+    console.log(`${prefecture.yomi} has ${count} restaurants`)
+    console.log(`${prefecture.yomi} has ${details.length} areas`)
+  }
 }
 
 export const getAreas = async (): Promise<AreaDb[]> => {
