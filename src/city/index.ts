@@ -1,6 +1,6 @@
-import { type JSDOM } from 'jsdom'
+import { JSDOM } from 'jsdom'
 import { connect } from '../db'
-import { type AreaDb, type City } from '../types'
+import { type CityDb, type AreaDb, type City } from '../types'
 import { getAreaDom, getAreas } from '../area'
 
 const getDetails = (arg: { dom: JSDOM, area: AreaDb }): City[] => {
@@ -140,18 +140,51 @@ export const asyncUpdateCities = async (): Promise<void> => {
   console.log('start asyncUpdateCities')
   const areas = await getAreas()
 
-  for (const [index, area] of Object.entries(areas)) {
-    const dom = await getAreaDom(area)
-    const count = countAreaRestaurant(dom)
-    const details = getDetails({ dom, area })
-
-    await Promise.all([
-      insertAreaCount({ count, id: area.id }),
-      insertCitiesAsync(details)
-    ])
-
-    console.log(`insertCitiesCount index = ${index} is done`)
-    console.log(`${area.name} has ${count} restaurants`)
-    console.log(`${area.name} has ${details.length} cities`)
+  for (let i = 0; i < areas.length; i += 10) {
+    const targets = areas.slice(i, i + 10)
+    const res = targets.map(async (x, index) => {
+      const dom = await getAreaDom(x)
+      const count = countAreaRestaurant(dom)
+      const details = getDetails({ dom, area: x })
+      await Promise.all([
+        insertAreaCount({ count, id: x.id }),
+        insertCitiesAsync(details)
+      ])
+      console.log(`insertCitiesCount index = ${index + i} is done`)
+      console.log(`${x.name} has ${count} restaurants`)
+      console.log(`${x.name} has ${details.length} cities`)
+    })
+    await Promise.all(res)
   }
+}
+
+export const getCities = async (): Promise<CityDb[]> => {
+  const client = await connect()
+  try {
+    const sql = process.env.PREFECTURE === undefined
+      ? 'SELECT id, name, url, code, prefecture_id FROM city'
+      : `SELECT id, name, url, code, prefecture_id FROM city WHERE prefecture_id = '${process.env.PREFECTURE}'`
+    const { rows } = await client.query(sql) as { rows: CityDb[] }
+    return rows
+  } catch (err) {
+    console.error(err)
+    throw new Error('DB Error')
+  } finally {
+    await client.end()
+  }
+}
+
+// Cityページの取得
+export const getCityDom = async (city: CityDb): Promise<JSDOM> => {
+  // ページ取得
+  let response
+  try {
+    response = await fetch(city.url)
+  } catch (err) {
+    console.error(err)
+    throw new Error('area fetch error')
+  }
+  const body = await response.text()
+  const dom = new JSDOM(body)
+  return dom
 }
