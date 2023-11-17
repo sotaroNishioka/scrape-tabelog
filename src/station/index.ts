@@ -1,11 +1,11 @@
-import { JSDOM } from 'jsdom'
+import { type JSDOM } from 'jsdom'
 import { connect } from '../db'
-import { type CityDb, type AreaDb, type City } from '../types'
-import { getAreaDom, getAreas } from '../area'
-import fetch from 'node-fetch'
+import { type CityDb, type Station, type City } from '../types'
+import { getCities, getCityDom } from '../city'
+// import fetch from 'node-fetch'
 
-const getDetails = (arg: { dom: JSDOM, area: AreaDb }): City[] => {
-  const { dom, area } = arg
+const getDetails = (arg: { dom: JSDOM, city: CityDb }): Station[] => {
+  const { dom, city } = arg
   // エリアから探すのタブを取得
   const tab = dom.window.document.body.querySelector('#tabs-panel-balloon-pref-area')
   if (tab === null) {
@@ -17,7 +17,7 @@ const getDetails = (arg: { dom: JSDOM, area: AreaDb }): City[] => {
       }
       return Array.from(linkItem)
     }).flat()
-    const res = getLinkVal(items, area)
+    const res = getLinkVal(items, city)
     return res
   }
   // エリアから探すの要素取得
@@ -37,12 +37,12 @@ const getDetails = (arg: { dom: JSDOM, area: AreaDb }): City[] => {
     }
     return Array.from(linkItem)
   }).flat()
-  const res = getLinkVal(items, area)
+  const res = getLinkVal(items, city)
   return res
 }
 
 // リンク要素からリンク、名称などを取得する
-const getLinkVal = (linkContents: Element[], area: AreaDb): City[] => {
+const getLinkVal = (linkContents: Element[], city: CityDb): Station[] => {
   // カラムからリンクの親要素を取得
   const res = linkContents.map((link): City | null => {
     // dom要素を取得
@@ -56,7 +56,7 @@ const getLinkVal = (linkContents: Element[], area: AreaDb): City[] => {
       throw new Error('hrefVal is not found')
     }
     // リンクのコードを取得
-    const code = hrefVal.split('/')[5]
+    const code = hrefVal.split('/')[6]
     if (code === '') {
       return null
     }
@@ -70,24 +70,31 @@ const getLinkVal = (linkContents: Element[], area: AreaDb): City[] => {
       name: nameVal,
       url: hrefVal,
       code,
-      prefectureId: area.prefecture_id,
-      areaId: area.id
+      prefectureId: city.prefecture_id,
+      areaId: city.area_id,
+      cityId: city.id
     }
     return obj
   })
-  const filtered = res.filter((x) => x !== null) as City[]
+  const filtered = res.filter((x) => x !== null) as Station[]
   return filtered
 }
 
-const insertCitiesAsync = async (details: City[]): Promise<void> => {
+const insertStationsAsync = async (details: Station[]): Promise<void> => {
   const client = await connect()
   try {
     const values = details.map((detail) => {
-      return `('${detail.name}', '${detail.url}', '${detail.code}', '${detail.prefectureId}', '${detail.areaId}')`
+      if (detail.code === '') {
+        console.log(detail)
+      }
+      return `('${detail.name}', '${detail.url}', '${detail.code}', '${detail.prefectureId}', '${detail.areaId}', '${detail.cityId}')`
     }).join(',')
+    if (values.length === 0) {
+      return
+    }
     await client.query(`
-      INSERT INTO 
-        city(name, url, code, prefecture_id, area_id)
+      INSERT INTO
+        station(name, url, code, prefecture_id, area_id, city_id)
         VALUES ${values}
         ON CONFLICT (url) DO NOTHING
       `)
@@ -99,11 +106,11 @@ const insertCitiesAsync = async (details: City[]): Promise<void> => {
   }
 }
 
-const insertAreaCount = async (arg: { count: number, id: string }): Promise<void> => {
+const insertCityCount = async (arg: { count: number, id: string }): Promise<void> => {
   const client = await connect()
   try {
     await client.query(`
-      UPDATE area
+      UPDATE city
       SET restaurant_count = ${arg.count}
       WHERE id = '${arg.id}'
       `)
@@ -115,7 +122,7 @@ const insertAreaCount = async (arg: { count: number, id: string }): Promise<void
   }
 }
 
-const countAreaRestaurant = (dom: JSDOM): number => {
+const countCityRestaurant = (dom: JSDOM): number => {
   const countArea = dom.window.document.body.querySelector('.list-controll')
   if (countArea === null) {
     return 0
@@ -139,55 +146,24 @@ const countAreaRestaurant = (dom: JSDOM): number => {
   return countNum
 }
 
-export const asyncUpdateCities = async (): Promise<void> => {
-  console.log('start asyncUpdateCities')
-  const areas = await getAreas()
+export const asyncUpdateStations = async (): Promise<void> => {
+  console.log('start asyncUpdateStations')
+  const cities = await getCities()
 
-  for (let i = 0; i < areas.length; i += 10) {
-    const targets = areas.slice(i, i + 10)
+  for (let i = 0; i < cities.length; i += 10) {
+    const targets = cities.slice(i, i + 10)
     const res = targets.map(async (x, index) => {
-      const dom = await getAreaDom(x)
-      const count = countAreaRestaurant(dom)
-      const details = getDetails({ dom, area: x })
+      const dom = await getCityDom(x)
+      const count = countCityRestaurant(dom)
+      const details = getDetails({ dom, city: x })
       await Promise.all([
-        insertAreaCount({ count, id: x.id }),
-        insertCitiesAsync(details)
+        insertCityCount({ count, id: x.id }),
+        insertStationsAsync(details)
       ])
-      console.log(`insertCitiesCount index = ${index + i} is done`)
+      console.log(`insertCityCount index = ${index + i} is done`)
       console.log(`${x.name} has ${count} restaurants`)
-      console.log(`${x.name} has ${details.length} cities`)
+      console.log(`${x.name} has ${details.length} areas`)
     })
     await Promise.all(res)
   }
-}
-
-export const getCities = async (): Promise<CityDb[]> => {
-  const client = await connect()
-  try {
-    const sql = process.env.PREFECTURE === undefined
-      ? 'SELECT id, name, url, code, area_id, prefecture_id FROM city'
-      : `SELECT id, name, url, code, area_id, prefecture_id FROM city WHERE prefecture_id = '${process.env.PREFECTURE}'`
-    const { rows } = await client.query(sql) as { rows: CityDb[] }
-    return rows
-  } catch (err) {
-    console.error(err)
-    throw new Error('DB Error')
-  } finally {
-    await client.end()
-  }
-}
-
-// Cityページの取得
-export const getCityDom = async (city: CityDb): Promise<JSDOM> => {
-  // ページ取得
-  let response
-  try {
-    response = await fetch(city.url)
-  } catch (err) {
-    console.error(err)
-    throw new Error('city fetch error')
-  }
-  const body = await response.text()
-  const dom = new JSDOM(body)
-  return dom
 }
