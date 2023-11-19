@@ -1,8 +1,8 @@
 import { type JSDOM } from 'jsdom'
-import { type AreaDb, type City } from '../types'
+import { type CityDb, type Station, type City } from '../types'
 
-export const getCityDetails = (arg: { dom: JSDOM, area: AreaDb }): City[] => {
-  const { dom, area } = arg
+export const getStationDetails = (arg: { dom: JSDOM, city: CityDb }): Station[] => {
+  const { dom, city } = arg
   // エリアから探すのタブを取得
   const tab = dom.window.document.body.querySelector('#tabs-panel-balloon-pref-area')
   if (tab === null) {
@@ -14,7 +14,7 @@ export const getCityDetails = (arg: { dom: JSDOM, area: AreaDb }): City[] => {
       }
       return Array.from(linkItem)
     }).flat()
-    const res = getCityLinkVal(items, area)
+    const res = getStationLinkVal(items, city)
     return res
   }
   // エリアから探すの要素取得
@@ -34,12 +34,12 @@ export const getCityDetails = (arg: { dom: JSDOM, area: AreaDb }): City[] => {
     }
     return Array.from(linkItem)
   }).flat()
-  const res = getCityLinkVal(items, area)
+  const res = getStationLinkVal(items, city)
   return res
 }
 
 // リンク要素からリンク、名称などを取得する
-const getCityLinkVal = (linkContents: Element[], area: AreaDb): City[] => {
+const getStationLinkVal = (linkContents: Element[], city: CityDb): Station[] => {
   // カラムからリンクの親要素を取得
   const res = linkContents.map((link): City | null => {
     // dom要素を取得
@@ -53,7 +53,7 @@ const getCityLinkVal = (linkContents: Element[], area: AreaDb): City[] => {
       throw new Error('hrefVal is not found')
     }
     // リンクのコードを取得
-    const code = hrefVal.split('/')[5]
+    const code = hrefVal.split('/')[6]
     if (code === '') {
       return null
     }
@@ -67,35 +67,12 @@ const getCityLinkVal = (linkContents: Element[], area: AreaDb): City[] => {
       name: nameVal,
       url: hrefVal,
       code,
-      prefectureId: area.prefecture_id,
-      areaId: area.id
+      prefectureId: city.prefecture_id,
+      areaId: city.area_id,
+      cityId: city.id
     }
     return obj
   })
-  const filtered = res.filter((x) => x !== null) as City[]
+  const filtered = res.filter((x) => x !== null) as Station[]
   return filtered
-}
-
-export const countCityRestaurant = (dom: JSDOM): number => {
-  const countArea = dom.window.document.body.querySelector('.list-controll')
-  if (countArea === null) {
-    return 0
-  }
-  const countWrap = countArea.querySelector('.c-page-count')
-  if (countWrap === null) {
-    return 0
-  }
-  const countItems = Array.from(countWrap.querySelectorAll('.c-page-count__num'))
-  if (countItems.length === 0) {
-    return 0
-  }
-  const countText = countItems[countItems.length - 1].getElementsByTagName('strong')[0].textContent
-  if (countText === null) {
-    return 0
-  }
-  const countNum = Number(countText.replace(/,/g, ''))
-  if (Number.isNaN(countNum)) {
-    return 0
-  }
-  return countNum
 }

@@ -21,22 +21,6 @@ export const insertCitiesAsync = async (details: City[]): Promise<void> => {
   }
 }
 
-export const insertAreaCount = async (arg: { count: number, id: string }): Promise<void> => {
-  const client = await connect()
-  try {
-    await client.query(`
-        UPDATE area
-        SET restaurant_count = ${arg.count}
-        WHERE id = '${arg.id}'
-        `)
-  } catch (err) {
-    console.error(err)
-    throw new Error('DB Error')
-  } finally {
-    await client.end()
-  }
-}
-
 export const getCities = async (): Promise<CityDb[]> => {
   const client = await connect()
   try {
@@ -45,6 +29,22 @@ export const getCities = async (): Promise<CityDb[]> => {
       : `SELECT id, name, url, code, area_id, prefecture_id FROM city WHERE prefecture_id = '${process.env.PREFECTURE}'`
     const { rows } = await client.query(sql) as { rows: CityDb[] }
     return rows
+  } catch (err) {
+    console.error(err)
+    throw new Error('DB Error')
+  } finally {
+    await client.end()
+  }
+}
+
+export const insertCityCount = async (arg: { count: number, id: string }): Promise<void> => {
+  const client = await connect()
+  try {
+    await client.query(`
+        UPDATE city
+        SET restaurant_count = ${arg.count}
+        WHERE id = '${arg.id}'
+        `)
   } catch (err) {
     console.error(err)
     throw new Error('DB Error')

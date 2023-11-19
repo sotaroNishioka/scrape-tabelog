@@ -1,7 +1,8 @@
-import { getPrefectures } from '../prefecture/db'
+import { getPrefectures, insertPrefectureCount } from '../prefecture/db'
 import { getPrefecturesDom } from '../prefecture/fetcher'
-import { countPrefectureRestaurant, getDetails } from './dom'
-import { insertAreasAsync, insertPrefectureCount } from './db'
+import { getAreaDetails } from './dom'
+import { insertAreasAsync } from './db'
+import { countPrefectureRestaurant } from '../prefecture/dom'
 
 export const asyncUpdateAreas = async (): Promise<void> => {
   console.log('start asyncUpdateAreas')
@@ -12,7 +13,7 @@ export const asyncUpdateAreas = async (): Promise<void> => {
     const res = targets.map(async (x, index) => {
       const dom = await getPrefecturesDom(x.roma)
       const count = countPrefectureRestaurant(dom)
-      const details = getDetails({ dom, id: x.id })
+      const details = getAreaDetails({ dom, id: x.id })
       await Promise.all([
         insertAreasAsync(details),
         insertPrefectureCount({ count, id: x.id })

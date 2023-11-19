@@ -1,7 +1,8 @@
-import { countAreaRestaurant, getDetails } from './dom'
-import { insertAreaCount, insertCitiesAsync } from './db'
-import { getAreas } from '../area/db'
+import { getCityDetails } from './dom'
+import { insertCitiesAsync } from './db'
+import { getAreas, insertAreaCount } from '../area/db'
 import { getAreaDom } from '../area/fetch'
+import { countAreaRestaurant } from '../area/dom'
 
 export const asyncUpdateCities = async (): Promise<void> => {
   console.log('start asyncUpdateCities')
@@ -12,7 +13,7 @@ export const asyncUpdateCities = async (): Promise<void> => {
     const res = targets.map(async (x, index) => {
       const dom = await getAreaDom(x)
       const count = countAreaRestaurant(dom)
-      const details = getDetails({ dom, area: x })
+      const details = getCityDetails({ dom, area: x })
       await Promise.all([
         insertAreaCount({ count, id: x.id }),
         insertCitiesAsync(details)

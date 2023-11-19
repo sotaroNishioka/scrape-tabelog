@@ -2,7 +2,7 @@ import { type JSDOM } from 'jsdom'
 import { type Area } from '../types'
 
 // dom情報からリンクや紐づく市区町村など情報をObjectにする
-export const getDetails = (prefecture: { id: string, dom: JSDOM }): Area[] => {
+export const getAreaDetails = (prefecture: { id: string, dom: JSDOM }): Area[] => {
   const { id, dom } = prefecture
   // タブ取得
   const tab = dom.window.document.body.querySelector('#tabs-panel-balloon-pref-area')
@@ -56,8 +56,7 @@ export const getDetails = (prefecture: { id: string, dom: JSDOM }): Area[] => {
   return res
 }
 
-// prefectureのDomからレストラン件数を取得する
-export const countPrefectureRestaurant = (dom: JSDOM): number => {
+export const countAreaRestaurant = (dom: JSDOM): number => {
   const countArea = dom.window.document.body.querySelector('.list-controll')
   if (countArea === null) {
     return 0
