@@ -8,7 +8,7 @@ const main = async (): Promise<void> => {
   await asyncUpdateCities()
   await asyncUpdateStations()
   const end = performance.now()
-  console.log(`takes ${(end - start) * 1000} seconds`)
+  console.log(`takes ${(end - start) / 1000} seconds`)
 }
 
 void main()

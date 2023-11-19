@@ -47,7 +47,7 @@ export const insertStationCount = async (arg: { count: number, id: string }): Pr
   const client = await connect()
   try {
     await client.query(`
-          UPDATE city
+          UPDATE station
           SET restaurant_count = ${arg.count}
           WHERE id = '${arg.id}'
           `)

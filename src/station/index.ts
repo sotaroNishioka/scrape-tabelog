@@ -1,7 +1,7 @@
 import { getCities, insertCityCount } from '../city/db'
 import { countCityRestaurant } from '../city/dom'
 import { getCityDom } from '../city/fetch'
-import { getStations, insertStationsAsync } from './db'
+import { getStations, insertStationCount, insertStationsAsync } from './db'
 import { getStationDetails, countStationRestaurant } from './dom'
 import { getStationDom } from './fetcher'
 // import fetch from 'node-fetch'
@@ -22,7 +22,7 @@ export const asyncUpdateStations = async (): Promise<void> => {
       ])
       console.log(`insertCityCount index = ${index + i} is done`)
       console.log(`${x.name} has ${count} restaurants`)
-      console.log(`${x.name} has ${details.length} areas`)
+      console.log(`${x.name} has ${details.length} stations`)
     })
     await Promise.all(res)
   }
@@ -34,7 +34,7 @@ export const asyncUpdateStations = async (): Promise<void> => {
     const res = targets.map(async (x, index) => {
       const dom = await getStationDom(x)
       const count = countStationRestaurant(dom)
-      await insertCityCount({ count, id: x.id })
+      await insertStationCount({ count, id: x.id })
       console.log(`insertStationCount index = ${index + i} is done`)
       console.log(`${x.name} has ${count} restaurants`)
     })
