@@ -28,6 +28,7 @@ export const asyncUpdateStations = async (): Promise<void> => {
   }
 
   const stations = await getStations()
+  console.log('start updatestation count')
   for (let i = 0; i < stations.length; i += 10) {
     const targets = stations.slice(i, i + 10)
     const res = targets.map(async (x, index) => {
@@ -39,4 +40,5 @@ export const asyncUpdateStations = async (): Promise<void> => {
     })
     await Promise.all(res)
   }
+  console.log('finish updatestation count')
 }

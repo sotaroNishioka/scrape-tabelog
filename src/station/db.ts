@@ -31,8 +31,8 @@ export const getStations = async (): Promise<StationDb[]> => {
   const client = await connect()
   try {
     const sql = process.env.PREFECTURE === undefined
-      ? 'SELECT id, name, url, code, area_id, prefecture_id, city_db FROM station'
-      : `SELECT id, name, url, code, area_id, prefecture_id, city_db FROM station WHERE prefecture_id = '${process.env.PREFECTURE}'`
+      ? 'SELECT id, name, url, code, area_id, prefecture_id, city_id FROM station'
+      : `SELECT id, name, url, code, area_id, prefecture_id, city_id FROM station WHERE prefecture_id = '${process.env.PREFECTURE}'`
     const { rows } = await client.query(sql) as { rows: StationDb[] }
     return rows
   } catch (err) {
