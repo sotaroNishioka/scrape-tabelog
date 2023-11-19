@@ -1,5 +1,5 @@
 import { connect } from '../db'
-import { type Station } from '../types'
+import { type StationDb, type Station } from '../types'
 
 export const insertStationsAsync = async (details: Station[]): Promise<void> => {
   const client = await connect()
@@ -19,6 +19,38 @@ export const insertStationsAsync = async (details: Station[]): Promise<void> => 
           VALUES ${values}
           ON CONFLICT (url) DO NOTHING
         `)
+  } catch (err) {
+    console.error(err)
+    throw new Error('DB Error')
+  } finally {
+    await client.end()
+  }
+}
+
+export const getStations = async (): Promise<StationDb[]> => {
+  const client = await connect()
+  try {
+    const sql = process.env.PREFECTURE === undefined
+      ? 'SELECT id, name, url, code, area_id, prefecture_id, city_db FROM station'
+      : `SELECT id, name, url, code, area_id, prefecture_id, city_db FROM station WHERE prefecture_id = '${process.env.PREFECTURE}'`
+    const { rows } = await client.query(sql) as { rows: StationDb[] }
+    return rows
+  } catch (err) {
+    console.error(err)
+    throw new Error('DB Error')
+  } finally {
+    await client.end()
+  }
+}
+
+export const insertStationCount = async (arg: { count: number, id: string }): Promise<void> => {
+  const client = await connect()
+  try {
+    await client.query(`
+          UPDATE city
+          SET restaurant_count = ${arg.count}
+          WHERE id = '${arg.id}'
+          `)
   } catch (err) {
     console.error(err)
     throw new Error('DB Error')
