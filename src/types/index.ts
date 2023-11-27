@@ -54,3 +54,42 @@ export interface StationDb {
   area_id: string
   city_id: string
 }
+
+export interface MajorCategory {
+  name: string
+  code: string
+}
+
+export interface MajorCategoryDb {
+  id: string
+  name: string
+  code: string
+}
+
+export interface MediumCategory {
+  name: string
+  code: string
+  majorCategoryId: string
+}
+
+export interface MediumCategoryDb {
+  id: string
+  name: string
+  code: string
+  major_category_id: string
+}
+
+export interface MinorCategory {
+  name: string
+  code: string
+  majorCategoryId: string
+  mediumCategoryId: string
+}
+
+export interface MinorCategoryDb {
+  id: string
+  name: string
+  code: string
+  major_category_id: string
+  medium_category_id: string
+}
