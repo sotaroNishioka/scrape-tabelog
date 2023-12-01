@@ -24,9 +24,7 @@ export const insertCitiesAsync = async (details: City[]): Promise<void> => {
 export const getCities = async (): Promise<CityDb[]> => {
   const client = await connect()
   try {
-    const sql = process.env.PREFECTURE === undefined
-      ? 'SELECT id, name, url, code, area_id, prefecture_id FROM city'
-      : `SELECT id, name, url, code, area_id, prefecture_id FROM city WHERE prefecture_id = '${process.env.PREFECTURE}'`
+    const sql = 'SELECT id, name, url, code, area_id, prefecture_id FROM city'
     const { rows } = await client.query(sql) as { rows: CityDb[] }
     return rows
   } catch (err) {

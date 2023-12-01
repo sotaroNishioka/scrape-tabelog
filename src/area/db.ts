@@ -24,9 +24,7 @@ export const insertAreasAsync = async (details: Area[]): Promise<void> => {
 export const getAreas = async (): Promise<AreaDb[]> => {
   const client = await connect()
   try {
-    const sql = process.env.PREFECTURE === undefined
-      ? 'SELECT id, name, url, code, prefecture_id FROM area'
-      : `SELECT id, name, url, code, prefecture_id FROM area WHERE prefecture_id = '${process.env.PREFECTURE}'`
+    const sql = 'SELECT id, name, url, code, prefecture_id FROM area'
     const { rows } = await client.query(sql) as { rows: AreaDb[] }
     return rows
   } catch (err) {
