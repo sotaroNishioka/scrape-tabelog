@@ -5,11 +5,11 @@ export const insertCitiesAsync = async (details: City[]): Promise<void> => {
   const client = await connect()
   try {
     const values = details.map((detail) => {
-      return `('${detail.name}', '${detail.url}', '${detail.code}', '${detail.prefectureId}', '${detail.areaId}')`
+      return `('${detail.name}', '${detail.url}', '${detail.code}', '${detail.areaId}')`
     }).join(',')
     await client.query(`
         INSERT INTO 
-          city(name, url, code, prefecture_id, area_id)
+          city(name, url, code, area_id)
           VALUES ${values}
           ON CONFLICT (url) DO NOTHING
         `)
@@ -24,7 +24,7 @@ export const insertCitiesAsync = async (details: City[]): Promise<void> => {
 export const getCities = async (): Promise<CityDb[]> => {
   const client = await connect()
   try {
-    const sql = 'SELECT id, name, url, code, area_id, prefecture_id FROM city'
+    const sql = 'SELECT id, name, url, code, area_id FROM city'
     const { rows } = await client.query(sql) as { rows: CityDb[] }
     return rows
   } catch (err) {

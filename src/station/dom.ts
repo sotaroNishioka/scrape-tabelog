@@ -1,5 +1,5 @@
 import { type JSDOM } from 'jsdom'
-import { type CityDb, type Station, type City } from '../types'
+import { type CityDb, type Station } from '../types'
 
 export const getStationDetails = (arg: { dom: JSDOM, city: CityDb }): Station[] => {
   const { dom, city } = arg
@@ -41,7 +41,7 @@ export const getStationDetails = (arg: { dom: JSDOM, city: CityDb }): Station[] 
 // リンク要素からリンク、名称などを取得する
 const getStationLinkVal = (linkContents: Element[], city: CityDb): Station[] => {
   // カラムからリンクの親要素を取得
-  const res = linkContents.map((link): City | null => {
+  const res = linkContents.map((link): Station | null => {
     // dom要素を取得
     const aDom = link.querySelector('.c-link-arrow')
     if (aDom === null) {
@@ -67,8 +67,6 @@ const getStationLinkVal = (linkContents: Element[], city: CityDb): Station[] => 
       name: nameVal,
       url: hrefVal,
       code,
-      prefectureId: city.prefecture_id,
-      areaId: city.area_id,
       cityId: city.id
     }
     return obj

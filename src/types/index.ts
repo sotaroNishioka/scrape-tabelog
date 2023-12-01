@@ -24,7 +24,6 @@ export interface City {
   name: string
   url: string
   code: string
-  prefectureId: string
   areaId: string
 }
 
@@ -33,15 +32,12 @@ export interface CityDb {
   name: string
   url: string
   code: string
-  prefecture_id: string
   area_id: string
 }
 export interface Station {
   name: string
   url: string
   code: string
-  prefectureId: string
-  areaId: string
   cityId: string
 }
 
@@ -50,8 +46,6 @@ export interface StationDb {
   name: string
   url: string
   code: string
-  prefecture_id: string
-  area_id: string
   city_id: string
 }
 
