@@ -39,9 +39,9 @@ export const insertCityCount = async (arg: { count: number, id: string }): Promi
   const client = await connect()
   try {
     await client.query(`
-        UPDATE city
-        SET restaurant_count = ${arg.count}
-        WHERE id = '${arg.id}'
+        INSERT INTO 
+          city_history(restaurant_count, city_id)
+          VALUES (${arg.count}, '${arg.id}')
         `)
   } catch (err) {
     console.error(err)

@@ -19,10 +19,10 @@ export const insertPrefectureCount = async (arg: { count: number, id: string }):
   const client = await connect()
   try {
     await client.query(`
-          UPDATE prefecture
-          SET restaurant_count = ${arg.count}
-          WHERE id = '${arg.id}'
-          `)
+    INSERT INTO 
+      prefecture_history(restaurant_count, prefecture_id)
+      VALUES (${arg.count}, '${arg.id}')
+    `)
   } catch (err) {
     console.error(err)
     throw new Error('DB Error')

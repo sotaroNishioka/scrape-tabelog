@@ -30,7 +30,7 @@ export const insertStationsAsync = async (details: Station[]): Promise<void> => 
 export const getStations = async (): Promise<StationDb[]> => {
   const client = await connect()
   try {
-    const sql = 'SELECT id, name, url, code, area_id, prefecture_id, city_id FROM station'
+    const sql = 'SELECT id, name, url, code, city_id FROM station'
     const { rows } = await client.query(sql) as { rows: StationDb[] }
     return rows
   } catch (err) {
@@ -45,10 +45,10 @@ export const insertStationCount = async (arg: { count: number, id: string }): Pr
   const client = await connect()
   try {
     await client.query(`
-          UPDATE station
-          SET restaurant_count = ${arg.count}
-          WHERE id = '${arg.id}'
-          `)
+    INSERT INTO 
+      station_history(restaurant_count, station_id)
+      VALUES (${arg.count}, '${arg.id}')
+    `)
   } catch (err) {
     console.error(err)
     throw new Error('DB Error')
