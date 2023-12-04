@@ -1,8 +1,9 @@
 FROM node:16-alpine
 WORKDIR /usr/src/app
 COPY package*.json ./
+COPY tsconfig.json ./
 COPY ./*.ts ./
 COPY ./*.js ./
 RUN npm ci
 RUN npm run build
-CMD [ "node", "dist/app.js" ]
+CMD [ "node", "build/index.js" ]
