@@ -2,8 +2,7 @@ FROM node:16-alpine
 WORKDIR /usr/src/app
 COPY package*.json ./
 COPY tsconfig.json ./
-COPY ./src/**/*.ts ./
-COPY ./src/**/*.js ./
+COPY ./src ./
 RUN ls -la
 RUN npm ci
 RUN npm run build
