@@ -6,3 +6,4 @@ COPY ./src ./src
 RUN ls -la
 RUN npm ci
 RUN npm run build
+CMD [ "node", "build/index.js" ]
