@@ -6,7 +6,7 @@ export const retry = async<T>(func: () => Promise<T>, count: number): Promise<T>
       console.error(e)
       throw new Error(`retry Error  tried ${count} times`)
     }
-    console.log('retryed')
+    console.warn('retryed')
     return await retry(func, count - 1)
   }
 }
