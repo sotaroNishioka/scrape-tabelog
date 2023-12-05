@@ -4,6 +4,7 @@ import { type MediumCategoryDb, type MajorCategoryDb, type MajorCategory, type M
 export const insertMajorCategoriesAsync = async (details: MajorCategory[]): Promise<void> => {
   const client = await connect()
   console.log('insertMajorCategoriesAsync')
+  console.log(details.length)
   try {
     const values = details.map((detail) => {
       return `('${detail.name}', '${detail.code}')`
@@ -24,6 +25,8 @@ export const insertMajorCategoriesAsync = async (details: MajorCategory[]): Prom
 
 export const insertMediumCategoriesAsync = async (details: MediumCategory[]): Promise<void> => {
   const client = await connect()
+  console.log('insertMediumCategoriesAsync')
+  console.log(details.length)
   try {
     const values = details.map((detail) => {
       return `('${detail.name}', '${detail.code}', '${detail.majorCategoryId}')`
@@ -44,6 +47,8 @@ export const insertMediumCategoriesAsync = async (details: MediumCategory[]): Pr
 
 export const insertMinorCategoriesAsync = async (details: MinorCategory[]): Promise<void> => {
   const client = await connect()
+  console.log('insertMinorCategoriesAsync')
+  console.log(details.length)
   try {
     const values = details.map((detail) => {
       return `('${detail.name}', '${detail.code}', '${detail.majorCategoryId}', '${detail.mediumCategoryId}')`
@@ -64,6 +69,7 @@ export const insertMinorCategoriesAsync = async (details: MinorCategory[]): Prom
 
 export const getMajorCategory = async (code: string): Promise<MajorCategoryDb> => {
   const client = await connect()
+  console.log('getMajorCategory')
   try {
     const result = await client.query(`
             SELECT * FROM major_category WHERE code = '${code}'
@@ -79,6 +85,7 @@ export const getMajorCategory = async (code: string): Promise<MajorCategoryDb> =
 
 export const getMediumCategory = async (code: string): Promise<MediumCategoryDb> => {
   const client = await connect()
+  console.log('getMediumCategory')
   try {
     const result = await client.query(`
               SELECT * FROM medium_category WHERE code = '${code}'
