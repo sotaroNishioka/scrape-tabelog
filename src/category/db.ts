@@ -3,6 +3,7 @@ import { type MediumCategoryDb, type MajorCategoryDb, type MajorCategory, type M
 
 export const insertMajorCategoriesAsync = async (details: MajorCategory[]): Promise<void> => {
   const client = await connect()
+  console.log('insertMajorCategoriesAsync')
   try {
     const values = details.map((detail) => {
       return `('${detail.name}', '${detail.code}')`
