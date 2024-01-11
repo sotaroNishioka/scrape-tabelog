@@ -90,3 +90,18 @@ export const getMediumCategory = async (code: string): Promise<MediumCategoryDb>
     await client.end()
   }
 }
+
+export const getMninorCategory = async (code: string): Promise<MinorCategory> => {
+  const client = await connect()
+  try {
+    const result = await client.query(`
+                SELECT * FROM minor_category WHERE code = '${code}'
+            `)
+    return result.rows[0]
+  } catch (err) {
+    console.error(err)
+    throw new Error('DB Error')
+  } finally {
+    await client.end()
+  }
+}
