@@ -15,7 +15,7 @@ export const getRestaurantCountDom = async (arg: { cityUrl: string, miniorCatego
   return dom
 }
 
-export const getRestaurantPageDom = async (arg: { cityUrl: string, miniorCategoryCode: string, page: number }) => {
+export const getRestaurantPageDom = async (arg: { cityUrl: string, miniorCategoryCode: string, page: number }): Promise<JSDOM> => {
   let response
   try {
     response = await retry(() => fetch(`${arg.cityUrl}/rstLst/${arg.miniorCategoryCode}/${arg.page}/`), 3)

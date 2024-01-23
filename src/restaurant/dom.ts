@@ -24,3 +24,13 @@ export const getRestaurantCount = (dom: JSDOM): number => {
   }
   return 0
 }
+
+export const getRestaurantUrls = (dom: JSDOM): string[] => {
+  const rstList = Array.from(dom.window.document.body.querySelectorAll('.rstlist-info'))[0]
+  const restaurantUrls = Array.from(rstList.querySelectorAll('.cpy-rst-name'))
+    .map((element) => {
+      const anchor = element as HTMLAnchorElement
+      return anchor.href
+    })
+  return restaurantUrls
+}
