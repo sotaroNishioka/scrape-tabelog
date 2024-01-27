@@ -2,7 +2,6 @@ import { getCities } from '../city/db'
 import { getAllMiniorCategory } from '../category/db'
 import { getRestaurantCountDom, getRestaurantDetailDom, getRestaurantListDom } from './fetcher'
 import { getRestaurantCount, getRestaurantDetail, getRestaurantUrls } from './dom'
-import { get } from 'http'
 
 export const asyncUpdateRestaurant = async (): Promise<void> => {
   console.log('start asyncUpdateRestaurant')
@@ -22,8 +21,8 @@ export const asyncUpdateRestaurant = async (): Promise<void> => {
         const restaurantUrls = getRestaurantUrls(pageDom)
         const restaurantDetails = restaurantUrls.map(async (url) => {
           const dom = await getRestaurantDetailDom(url)
-          const res = getRestaurantDetail(dom)
-          return { ...res, url }
+          const res = getRestaurantDetail(dom, url)
+          return res
         })
         const res = await Promise.all(restaurantDetails)
         console.log(res)

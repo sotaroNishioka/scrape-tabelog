@@ -28,7 +28,6 @@ export const getRestaurantListDom = async (arg: { cityUrl: string, miniorCategor
   return dom
 }
 
-
 export const getRestaurantDetailDom = async (url: string): Promise<JSDOM> => {
   let response
   try {

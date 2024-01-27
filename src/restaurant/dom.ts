@@ -35,36 +35,170 @@ export const getRestaurantUrls = (dom: JSDOM): string[] => {
   return restaurantUrls
 }
 
-export const getRestaurantDetail = (dom: JSDOM): { name: string, address: string, tel: string, opentime: string, holiday: string, budget: string, lunch: string, creditCard: string, eMoney: string, urlMobile: string, latitude: string, longitude: string } => {
+const getGenreIds = (dom: JSDOM): string[] | null => {
+  const genreItem = Array.from(dom.window.document.body.querySelectorAll('.rdheader-subinfo__item')).find((element) => {
+    const title = element.querySelector('.rdheader-subinfo__item-title')?.textContent
+    return (title != null) && title.includes('ジャンル')
+  })
+  if (genreItem === undefined) {
+    return null
+  }
+  const result = Array.from(genreItem.querySelectorAll('.linktree__parent-target')).map((element) => {
+    const anchor = element as HTMLAnchorElement
+    const splited = anchor.href.split('/')
+    return splited[splited.length - 2]
+  })
+  return result
+}
+
+const getBuget = (dom: JSDOM): { lunch: { min: number, max: number } | null, dinner: { min: number, max: number } | null } | null => {
+  const budgetItem = Array.from(dom.window.document.body.querySelectorAll('.rdheader-subinfo__item')).find((element) => {
+    const title = element.querySelector('.rdheader-subinfo__item-title')?.textContent
+    return (title != null) && title.includes('予算')
+  })
+  if (budgetItem === undefined) {
+    return null
+  }
+  const budgets = Array.from(budgetItem.querySelectorAll('.rdheader-budget__price-target'))
+  const lunch = budgets[0].textContent
+  const dinner = budgets[1].textContent
+  const lunchRange = lunch === '-' || lunch === null ? null : lunch.split('～')
+  const dinnerRange = dinner === '-' || dinner === null ? null : dinner.split('～')
+  const result = {
+    lunch: lunchRange === null
+      ? null
+      : {
+          min: isNaN(Number(lunchRange?.[0]?.replace(/[^0-9]/g, ''))) ? 0 : Number(lunchRange?.[0]?.replace(/[^0-9]/g, '')),
+          max: isNaN(Number(lunchRange?.[1]?.replace(/[^0-9]/g, ''))) ? 0 : Number(lunchRange?.[1]?.replace(/[^0-9]/g, ''))
+        },
+    dinner: dinnerRange === null
+      ? null
+      : {
+          min: isNaN(Number(dinnerRange?.[0]?.replace(/[^0-9]/g, ''))) ? 0 : Number(dinnerRange?.[0]?.replace(/[^0-9]/g, '')),
+          max: isNaN(Number(dinnerRange?.[1]?.replace(/[^0-9]/g, ''))) ? 0 : Number(dinnerRange?.[1]?.replace(/[^0-9]/g, ''))
+        }
+  }
+  return result
+}
+
+const getStationId = (dom: JSDOM): string | null => {
+  const stationItem = Array.from(dom.window.document.body.querySelectorAll('.rdheader-subinfo__item')).find((element) => {
+    const title = element.querySelector('.rdheader-subinfo__item-title')?.textContent
+    return (title != null) && title.includes('最寄り駅')
+  })
+  if (stationItem === undefined) {
+    return null
+  }
+  const stationContent = stationItem.querySelector('.rdheader-subinfo__item-text')
+  const stationHref = stationContent?.querySelector('a')?.href?.split('/')
+  const stationId = stationHref?.[stationHref.length - 3]
+  return stationId ?? null
+}
+
+const convertTableItems = (dom: JSDOM): Array<{ title: string, dom: Element | null }> => {
+  const tables = dom.window.document.body.querySelectorAll('.rstinfo-table__table')
+  const tableItems = Array.from(tables).map((table) => {
+    const rows = Array.from(table.querySelectorAll('tr'))
+    const res = rows.map((row) => {
+      const title = row.querySelector('th')?.textContent ?? ''
+      const dom = row.querySelector('td')
+      return { title, dom }
+    })
+    return res.flat()
+  })
+  return tableItems.flat()
+}
+
+interface RestaurantDetail {
+  url: string
+  prefectureId: string
+  areaId: string
+  cityId: string
+  restaurantId: string
+  stationId: string | null
+  name: string | null
+  address: string | null
+  mapImageUrl: string | null
+  tel: string | null
+  rate: number | null
+  review: number | null
+  bookMark: number | null
+  photoCount: number | null
+  isAbleReserve: boolean
+  budget: { lunch: { min: number, max: number } | null, dinner: { min: number, max: number } | null } | null
+  genreIds: string[] | null
+  transportation: string | null
+  openingHours: string | null
+  holiday: string | null
+  tax: string | null
+  seat: number | null
+  smoking: string | null
+  parking: string | null
+  child: string | null
+  note: string | null
+  homepage: string | null
+}
+
+export const getRestaurantDetail = (dom: JSDOM, url: string): RestaurantDetail => {
+  // 基本情報
+  const prefectureId = url.split('/')[3]
+  const areaId = url.split('/')[4]
+  const cityId = url.split('/')[5]
+  const restaurantId = url.split('/')[6]
+  const stationId = getStationId(dom)
   const name = dom.window.document.body.querySelector('.rstinfo-table__name-wrap')?.querySelector('span')?.textContent
   const tel = dom.window.document.body.querySelector('.rstinfo-table__tel-num')?.textContent
   const address = dom.window.document.body.querySelector('.rstinfo-table__address')?.textContent
   const rate = dom.window.document.body.querySelector('.rdheader-rating__score-val-dtl')?.textContent
-  const reviewCount = dom.window.document.body.querySelector('.rdheader-rating__review-target')?.querySelector('.num')?.textContent
-  const opentime = dom.window.document.body.querySelector('.rstinfo-table__table')?.querySelectorAll('tr')[0]?.querySelectorAll('td')[1]?.textContent
-  const holiday = dom.window.document.body.querySelector('.rstinfo-table__table')?.querySelectorAll('tr')[1]?.querySelectorAll('td')[1]?.textContent
-  const budget = dom.window.document.body.querySelector('.c-table.c-table--form rstinfo-table__table')?.querySelectorAll('tr')[0]?.querySelectorAll('td')[1]?.textContent
-  const lunch = dom.window.document.body.querySelector('.c-table.c-table--form rstinfo-table__table')?.querySelectorAll('tr')[1]?.querySelectorAll('td')[1]?.textContent
-  const creditCard = dom.window.document.body.querySelector('.c-table.c-table--form rstinfo-table__table')?.querySelectorAll('tr')[2]?.querySelectorAll('td')[1]?.textContent
-  const eMoney = dom.window.document.body.querySelector('.c-table.c-table--form rstinfo-table__table')?.querySelectorAll('tr')[3]?.querySelectorAll('td')[1]?.textContent
-  const urlMobile = dom.window.document.body.querySelector('.rstinfo-table__tel-area')?.querySelector('a')?.href
-  const latitude = dom.window.document.body.querySelector('#js-map-latitude')?.getAttribute('value')
-  const longitude = dom.window.document.body.querySelector('#js-map-longitude')?.getAttribute('value')
+  const review = dom.window.document.body.querySelector('.rdheader-rating__review-target')?.querySelector('.num')?.textContent
+  const bookMark = dom.window.document.body.querySelector('.rdheader-rating__hozon-target')?.querySelector('.num')?.textContent
+  const photoCount = dom.window.document.body.querySelector('#rdnavi-photo')?.querySelector('.rstdtl-navi__total-count')?.querySelector('strong')?.textContent
+  const isAbleReserve = dom.window.document.body.querySelector('.rstinfo-table__reserve-status')?.textContent === '予約可'
+  const genreIds = getGenreIds(dom)
+  const budget = getBuget(dom)
+  const mapImageUrl = dom.window.document.body.querySelector('.rstinfo-table__map-image')?.getAttribute('data-original')
+
+  // その他情報
+  const tableItems = convertTableItems(dom)
+  const transportation = tableItems.find((item) => item.title === '交通手段')?.dom?.textContent
+  const openingHours = tableItems.find((item) => item.title === '営業時間')?.dom?.querySelectorAll('.rstinfo-table__subject-text')[0]?.textContent
+  const holiday = tableItems.find((item) => item.title === '営業時間')?.dom?.querySelectorAll('.rstinfo-table__subject-text')[1]?.textContent
+  const tax = tableItems.find((item) => item.title === 'サービス料・チャージ')?.dom?.textContent
+  const seat = tableItems.find((item) => item.title === '席数')?.dom?.querySelectorAll('p')[0]?.textContent?.replace(/席/g, '')
+  const smoking = tableItems.find((item) => item.title === '禁煙・喫煙')?.dom?.textContent
+  const parking = tableItems.find((item) => item.title === '駐車場')?.dom?.textContent
+  const child = tableItems.find((item) => item.title === 'お子様連れ')?.dom?.textContent
+  const note = tableItems.find((item) => item.title === '備考')?.dom?.textContent
+  const homepage = tableItems.find((item) => item.title === 'ホームページ')?.dom?.querySelector('a')?.href
+
   const result = {
-    name: name ?? '',
-    address: address ?? '',
-    tel: tel ?? '',
-    rate: rate ?? '',
-    reviewCount: reviewCount ?? '',
-    opentime: opentime ?? '',
-    holiday: holiday ?? '',
-    budget: budget ?? '',
-    lunch: lunch ?? '',
-    creditCard: creditCard ?? '',
-    eMoney: eMoney ?? '',
-    urlMobile: urlMobile ?? '',
-    latitude: latitude ?? '',
-    longitude: longitude ?? ''
+    url,
+    prefectureId,
+    areaId,
+    cityId,
+    restaurantId,
+    stationId,
+    name: name ?? null,
+    address: address ?? null,
+    mapImageUrl: mapImageUrl ?? null,
+    tel: tel ?? null,
+    rate: isNaN(Number(rate)) ? null : Number(rate),
+    review: isNaN(Number(review)) ? null : Number(review),
+    bookMark: isNaN(Number(bookMark)) ? null : Number(bookMark),
+    photoCount: isNaN(Number(photoCount)) ? null : Number(photoCount),
+    isAbleReserve,
+    budget,
+    genreIds,
+    transportation: transportation ?? null,
+    openingHours: openingHours ?? null,
+    holiday: holiday ?? null,
+    tax: tax ?? null,
+    seat: isNaN(Number(seat)) ? null : Number(seat),
+    smoking: smoking ?? null,
+    parking: parking ?? null,
+    child: child ?? null,
+    note: note ?? null,
+    homepage: homepage ?? null
   }
   return result
 }
