@@ -35,7 +35,7 @@ export const getRestaurantUrls = (dom: JSDOM): string[] => {
   return restaurantUrls
 }
 
-const getGenreIds = (dom: JSDOM): string[] | null => {
+const getCategoryCodes = (dom: JSDOM): string[] | null => {
   const genreItem = Array.from(dom.window.document.body.querySelectorAll('.rdheader-subinfo__item')).find((element) => {
     const title = element.querySelector('.rdheader-subinfo__item-title')?.textContent
     return (title != null) && title.includes('ジャンル')
@@ -81,7 +81,7 @@ const getBuget = (dom: JSDOM): { lunch: { min: number, max: number } | null, din
   return result
 }
 
-const getStationId = (dom: JSDOM): string | null => {
+const getStationCode = (dom: JSDOM): string | null => {
   const stationItem = Array.from(dom.window.document.body.querySelectorAll('.rdheader-subinfo__item')).find((element) => {
     const title = element.querySelector('.rdheader-subinfo__item-title')?.textContent
     return (title != null) && title.includes('最寄り駅')
@@ -91,8 +91,8 @@ const getStationId = (dom: JSDOM): string | null => {
   }
   const stationContent = stationItem.querySelector('.rdheader-subinfo__item-text')
   const stationHref = stationContent?.querySelector('a')?.href?.split('/')
-  const stationId = stationHref?.[stationHref.length - 3]
-  return stationId ?? null
+  const stationCode = stationHref?.[stationHref.length - 3]
+  return stationCode ?? null
 }
 
 const convertTableItems = (dom: JSDOM): Array<{ title: string, dom: Element | null }> => {
@@ -111,11 +111,11 @@ const convertTableItems = (dom: JSDOM): Array<{ title: string, dom: Element | nu
 
 interface RestaurantDetail {
   url: string
-  prefectureId: string
-  areaId: string
-  cityId: string
-  restaurantId: string
-  stationId: string | null
+  prefectureCode: string
+  areaCode: string
+  cityCode: string
+  restaurantCode: string
+  stationCode: string | null
   name: string | null
   address: string | null
   mapImageUrl: string | null
@@ -126,7 +126,7 @@ interface RestaurantDetail {
   photoCount: number | null
   isAbleReserve: boolean
   budget: { lunch: { min: number, max: number } | null, dinner: { min: number, max: number } | null } | null
-  genreIds: string[] | null
+  categoryCodes: string[] | null
   transportation: string | null
   openingHours: string | null
   holiday: string | null
@@ -141,11 +141,11 @@ interface RestaurantDetail {
 
 export const getRestaurantDetail = (dom: JSDOM, url: string): RestaurantDetail => {
   // 基本情報
-  const prefectureId = url.split('/')[3]
-  const areaId = url.split('/')[4]
-  const cityId = url.split('/')[5]
-  const restaurantId = url.split('/')[6]
-  const stationId = getStationId(dom)
+  const prefectureCode = url.split('/')[3]
+  const areaCode = url.split('/')[4]
+  const cityCode = url.split('/')[5]
+  const restaurantCode = url.split('/')[6]
+  const stationCode = getStationCode(dom)
   const name = dom.window.document.body.querySelector('.rstinfo-table__name-wrap')?.querySelector('span')?.textContent
   const tel = dom.window.document.body.querySelector('.rstinfo-table__tel-num')?.textContent
   const address = dom.window.document.body.querySelector('.rstinfo-table__address')?.textContent
@@ -154,7 +154,7 @@ export const getRestaurantDetail = (dom: JSDOM, url: string): RestaurantDetail =
   const bookMark = dom.window.document.body.querySelector('.rdheader-rating__hozon-target')?.querySelector('.num')?.textContent
   const photoCount = dom.window.document.body.querySelector('#rdnavi-photo')?.querySelector('.rstdtl-navi__total-count')?.querySelector('strong')?.textContent
   const isAbleReserve = dom.window.document.body.querySelector('.rstinfo-table__reserve-status')?.textContent === '予約可'
-  const genreIds = getGenreIds(dom)
+  const categoryCodes = getCategoryCodes(dom)
   const budget = getBuget(dom)
   const mapImageUrl = dom.window.document.body.querySelector('.rstinfo-table__map-image')?.getAttribute('data-original')
 
@@ -173,11 +173,11 @@ export const getRestaurantDetail = (dom: JSDOM, url: string): RestaurantDetail =
 
   const result = {
     url,
-    prefectureId,
-    areaId,
-    cityId,
-    restaurantId,
-    stationId,
+    prefectureCode,
+    areaCode,
+    cityCode,
+    stationCode,
+    restaurantCode,
     name: name ?? null,
     address: address ?? null,
     mapImageUrl: mapImageUrl ?? null,
@@ -188,7 +188,7 @@ export const getRestaurantDetail = (dom: JSDOM, url: string): RestaurantDetail =
     photoCount: isNaN(Number(photoCount)) ? null : Number(photoCount),
     isAbleReserve,
     budget,
-    genreIds,
+    categoryCodes,
     transportation: transportation ?? null,
     openingHours: openingHours ?? null,
     holiday: holiday ?? null,
