@@ -87,3 +87,33 @@ export interface MinorCategoryDb {
   major_category_id: string
   medium_category_id: string
 }
+
+export interface RestaurantDetail {
+  url: string
+  prefectureCode: string
+  areaCode: string
+  cityCode: string
+  code: string
+  stationCode: string | null
+  name: string | null
+  address: string | null
+  mapImageUrl: string | null
+  tel: string | null
+  rate: number | null
+  review: number | null
+  bookMark: number | null
+  photoCount: number | null
+  isAbleReserve: boolean
+  budget: { lunch: { min: number, max: number } | null, dinner: { min: number, max: number } | null } | null
+  categoryCodes: string[] | null
+  transportation: string | null
+  openingHours: string | null
+  holiday: string | null
+  tax: string | null
+  seat: number | null
+  smoking: string | null
+  parking: string | null
+  child: string | null
+  note: string | null
+  homePage: string | null
+}

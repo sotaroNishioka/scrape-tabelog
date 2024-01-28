@@ -1,4 +1,5 @@
 import { type JSDOM } from 'jsdom'
+import { type RestaurantDetail } from '../types'
 
 export const getRestaurantCount = (dom: JSDOM): number => {
   const countArea = dom.window.document.body.querySelector('.c-page-count')
@@ -109,36 +110,6 @@ const convertTableItems = (dom: JSDOM): Array<{ title: string, dom: Element | nu
   return tableItems.flat()
 }
 
-interface RestaurantDetail {
-  url: string
-  prefectureCode: string
-  areaCode: string
-  cityCode: string
-  restaurantCode: string
-  stationCode: string | null
-  name: string | null
-  address: string | null
-  mapImageUrl: string | null
-  tel: string | null
-  rate: number | null
-  review: number | null
-  bookMark: number | null
-  photoCount: number | null
-  isAbleReserve: boolean
-  budget: { lunch: { min: number, max: number } | null, dinner: { min: number, max: number } | null } | null
-  categoryCodes: string[] | null
-  transportation: string | null
-  openingHours: string | null
-  holiday: string | null
-  tax: string | null
-  seat: number | null
-  smoking: string | null
-  parking: string | null
-  child: string | null
-  note: string | null
-  homepage: string | null
-}
-
 export const getRestaurantDetail = (dom: JSDOM, url: string): RestaurantDetail => {
   // 基本情報
   const prefectureCode = url.split('/')[3]
@@ -177,7 +148,7 @@ export const getRestaurantDetail = (dom: JSDOM, url: string): RestaurantDetail =
     areaCode,
     cityCode,
     stationCode,
-    restaurantCode,
+    code: restaurantCode,
     name: name ?? null,
     address: address ?? null,
     mapImageUrl: mapImageUrl ?? null,
@@ -198,7 +169,7 @@ export const getRestaurantDetail = (dom: JSDOM, url: string): RestaurantDetail =
     parking: parking ?? null,
     child: child ?? null,
     note: note ?? null,
-    homepage: homepage ?? null
+    homePage: homepage ?? null
   }
   return result
 }
