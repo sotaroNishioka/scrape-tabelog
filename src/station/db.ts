@@ -5,9 +5,6 @@ export const insertStationsAsync = async (details: Station[]): Promise<void> => 
   const client = await connect()
   try {
     const values = details.map((detail) => {
-      // if (detail.code === '') {
-      //   console.log(detail)
-      // }
       return `('${detail.name}', '${detail.url}', '${detail.code}', '${detail.cityId}')`
     }).join(',')
     if (values.length === 0) {

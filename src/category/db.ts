@@ -1,5 +1,5 @@
 import { connect } from '../db'
-import { type MediumCategoryDb, type MajorCategoryDb, type MajorCategory, type MinorCategory, type MediumCategory } from '../types'
+import { type MediumCategoryDb, type MajorCategoryDb, type MajorCategory, type MinorCategory, type MediumCategory, type MinorCategoryDb } from '../types'
 
 export const insertMajorCategoriesAsync = async (details: MajorCategory[]): Promise<void> => {
   const client = await connect()
@@ -83,6 +83,51 @@ export const getMediumCategory = async (code: string): Promise<MediumCategoryDb>
               SELECT * FROM medium_category WHERE code = '${code}'
           `)
     return result.rows[0]
+  } catch (err) {
+    console.error(err)
+    throw new Error('DB Error')
+  } finally {
+    await client.end()
+  }
+}
+
+export const getAllMiniorCategory = async (): Promise<MinorCategoryDb[]> => {
+  const client = await connect()
+  try {
+    const result = await client.query(`
+                SELECT * FROM minor_category
+            `)
+    return result.rows
+  } catch (err) {
+    console.error(err)
+    throw new Error('DB Error')
+  } finally {
+    await client.end()
+  }
+}
+
+export const getAllMediumCategory = async (): Promise<MediumCategoryDb[]> => {
+  const client = await connect()
+  try {
+    const result = await client.query(`
+                  SELECT * FROM medium_category
+              `)
+    return result.rows
+  } catch (err) {
+    console.error(err)
+    throw new Error('DB Error')
+  } finally {
+    await client.end()
+  }
+}
+
+export const getAllMajorCategory = async (): Promise<MajorCategoryDb[]> => {
+  const client = await connect()
+  try {
+    const result = await client.query(`
+                    SELECT * FROM major_category
+                `)
+    return result.rows
   } catch (err) {
     console.error(err)
     throw new Error('DB Error')
