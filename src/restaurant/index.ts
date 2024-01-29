@@ -30,13 +30,12 @@ export const asyncUpdateRestaurant = async (): Promise<void> => {
           return res
         })
         const restaurantDetails = await Promise.all(asyncRestaurantDetails)
-        await insertRestaurantsAsync(restaurantDetails)
-        await insertRestaurantCategories({
+        await Promise.all([insertRestaurantsAsync(restaurantDetails), insertRestaurantCategories({
           restaurants: restaurantDetails,
           majorCategories,
           mediumCategories,
           minorCategories
-        })
+        })])
       }
     }
   }
