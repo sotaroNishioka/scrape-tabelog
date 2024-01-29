@@ -17,19 +17,17 @@ export const asyncUpdateRestaurant = async (): Promise<void> => {
         continue
       }
       const pageArr = Array.from({ length: Math.ceil(count / 20) }, (_, i) => i + 1)
-      const asyncInsert = pageArr.map(async (page) => {
+      for (const page of pageArr) {
         const pageDom = await getRestaurantListDom({ cityUrl: city.url, miniorCategoryCode: category.code, page })
         const restaurantUrls = getRestaurantUrls(pageDom)
         const asyncRestaurantDetails = restaurantUrls.map(async (url) => {
           const dom = await getRestaurantDetailDom(url)
           const res = getRestaurantDetail(dom, url)
-          console.log(res)
           return res
         })
         const restaurantDetails = await Promise.all(asyncRestaurantDetails)
         await insertRestaurantsAsync(restaurantDetails)
-      })
-      await Promise.all(asyncInsert)
+      }
     }
   }
 }
