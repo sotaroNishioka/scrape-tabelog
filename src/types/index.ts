@@ -105,7 +105,7 @@ export interface RestaurantDetail {
   photoCount: number | null
   isAbleReserve: boolean
   budget: { lunch: { min: number, max: number } | null, dinner: { min: number, max: number } | null } | null
-  categoryCodes: string[] | null
+  categoryCodes: string[]
   transportation: string | null
   openingHours: string | null
   holiday: string | null

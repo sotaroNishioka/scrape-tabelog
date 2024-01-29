@@ -1,16 +1,20 @@
 import { getCities } from '../city/db'
-import { getAllMiniorCategory } from '../category/db'
+import { getAllMajorCategory, getAllMediumCategory, getAllMiniorCategory } from '../category/db'
 import { getRestaurantCountDom, getRestaurantDetailDom, getRestaurantListDom } from './fetcher'
 import { getRestaurantCount, getRestaurantDetail, getRestaurantUrls } from './dom'
-import { insertRestaurantsAsync } from './db'
+import { insertRestaurantCategories, insertRestaurantsAsync } from './db'
 
 export const asyncUpdateRestaurant = async (): Promise<void> => {
   console.log('start asyncUpdateRestaurant')
-  const cities = await getCities()
-  const categories = await getAllMiniorCategory()
+  const [cities, minorCategories, mediumCategories, majorCategories] = await Promise.all([
+    getCities(),
+    getAllMiniorCategory(),
+    getAllMediumCategory(),
+    getAllMajorCategory()
+  ])
 
   for (const city of cities) {
-    for (const category of categories) {
+    for (const category of minorCategories) {
       const countDom = await getRestaurantCountDom({ cityUrl: city.url, miniorCategoryCode: category.code })
       const count = getRestaurantCount(countDom)
       if (count === 0) {
@@ -27,6 +31,12 @@ export const asyncUpdateRestaurant = async (): Promise<void> => {
         })
         const restaurantDetails = await Promise.all(asyncRestaurantDetails)
         await insertRestaurantsAsync(restaurantDetails)
+        await insertRestaurantCategories({
+          restaurants: restaurantDetails,
+          majorCategories,
+          mediumCategories,
+          minorCategories
+        })
       }
     }
   }

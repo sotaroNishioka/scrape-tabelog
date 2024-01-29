@@ -159,7 +159,7 @@ export const getRestaurantDetail = (dom: JSDOM, url: string): RestaurantDetail =
     photoCount: isNaN(Number(photoCount)) ? null : Number(photoCount),
     isAbleReserve,
     budget,
-    categoryCodes,
+    categoryCodes: categoryCodes ?? [],
     transportation: transportation ?? null,
     openingHours: openingHours ?? null,
     holiday: holiday ?? null,
