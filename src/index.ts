@@ -6,10 +6,10 @@ import { asyncUpdateRestaurant } from './restaurant'
 
 const main = async (): Promise<void> => {
   const start = performance.now()
-  // await asyncUpdateCategory()
-  // await asyncUpdateAreas()
-  // await asyncUpdateCities()
-  // await asyncUpdateStations()
+  await asyncUpdateCategory()
+  await asyncUpdateAreas()
+  await asyncUpdateCities()
+  await asyncUpdateStations()
   await asyncUpdateRestaurant()
   const end = performance.now()
   console.log(`takes ${(end - start) / 1000} seconds`)
