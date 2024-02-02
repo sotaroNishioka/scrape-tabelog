@@ -117,7 +117,7 @@ export const getRestaurantDetail = (dom: JSDOM, url: string): RestaurantDetail =
   const cityCode = url.split('/')[5]
   const restaurantCode = url.split('/')[6]
   const stationCode = getStationCode(dom)
-  const name = dom.window.document.body.querySelector('.rstinfo-table__name-wrap')?.querySelector('span')?.textContent
+  const name = dom.window.document.body.querySelector('.rdheader-rstname')?.querySelector('.display-name')?.querySelector('span')?.textContent
   const tel = dom.window.document.body.querySelector('.rstinfo-table__tel-num')?.textContent
   const address = dom.window.document.body.querySelector('.rstinfo-table__address')?.textContent
   const rate = dom.window.document.body.querySelector('.rdheader-rating__score-val-dtl')?.textContent
