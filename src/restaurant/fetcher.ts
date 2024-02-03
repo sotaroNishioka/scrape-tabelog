@@ -5,7 +5,7 @@ import { retry } from '../utils/retry'
 export const getRestaurantCountDom = async (arg: { cityUrl: string, miniorCategoryCode: string }): Promise<JSDOM> => {
   let response
   try {
-    response = await retry(() => fetch(`${arg.cityUrl}/rstLst/${arg.miniorCategoryCode}/`), 3)
+    response = await retry(() => fetch(`${arg.cityUrl}/rstLst/${arg.miniorCategoryCode}/`), 10)
   } catch (err) {
     console.error(err)
     throw new Error('restaurantCount fetch error')
@@ -18,7 +18,7 @@ export const getRestaurantCountDom = async (arg: { cityUrl: string, miniorCatego
 export const getRestaurantListDom = async (arg: { cityUrl: string, miniorCategoryCode: string, page: number }): Promise<JSDOM> => {
   let response
   try {
-    response = await retry(() => fetch(`${arg.cityUrl}/rstLst/${arg.miniorCategoryCode}/${arg.page}/`), 3)
+    response = await retry(() => fetch(`${arg.cityUrl}/rstLst/${arg.miniorCategoryCode}/${arg.page}/`), 10)
   } catch (err) {
     console.error(err)
     throw new Error('restaurantList fetch error')
@@ -31,7 +31,7 @@ export const getRestaurantListDom = async (arg: { cityUrl: string, miniorCategor
 export const getRestaurantDetailDom = async (url: string): Promise<JSDOM> => {
   let response
   try {
-    response = await retry(() => fetch(url), 3)
+    response = await retry(() => fetch(url), 10)
   } catch (err) {
     console.error(err)
     throw new Error('restaurantDetail fetch error')
