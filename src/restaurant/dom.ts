@@ -149,7 +149,7 @@ export const getRestaurantDetail = (dom: JSDOM, url: string): RestaurantDetail =
     cityCode,
     stationCode,
     code: restaurantCode,
-    name: name ?? null,
+    name: name ?? '',
     address: address ?? null,
     mapImageUrl: mapImageUrl ?? null,
     tel: tel ?? null,
