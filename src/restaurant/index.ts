@@ -3,6 +3,8 @@ import { getAllMajorCategory, getAllMediumCategory, getAllMiniorCategory } from 
 import { getRestaurantCountDom, getRestaurantDetailDom, getRestaurantListDom } from './fetcher'
 import { getRestaurantCount, getRestaurantDetail, getRestaurantUrls } from './dom'
 import { insertRestaurantCategories, insertRestaurantsAsync } from './db'
+import { retryAsync } from '../utils/retry'
+import { type RestaurantDetail } from '../types'
 
 export const asyncUpdateRestaurant = async (): Promise<void> => {
   console.log('start asyncUpdateRestaurant')
@@ -25,8 +27,11 @@ export const asyncUpdateRestaurant = async (): Promise<void> => {
         const pageDom = await getRestaurantListDom({ cityUrl: city.url, miniorCategoryCode: category.code, page })
         const restaurantUrls = getRestaurantUrls(pageDom)
         const asyncRestaurantDetails = restaurantUrls.map(async (url) => {
-          const dom = await getRestaurantDetailDom(url)
-          const res = getRestaurantDetail(dom, url)
+          const res = await retryAsync<RestaurantDetail>(async () => {
+            const dom = await getRestaurantDetailDom(url)
+            const res = getRestaurantDetail(dom, url)
+            return res
+          }, 10)
           return res
         })
         const restaurantDetails = await Promise.all(asyncRestaurantDetails)

@@ -1,14 +1,17 @@
 import { JSDOM } from 'jsdom'
 import { type CityDb } from '../types'
 import fetch from 'node-fetch'
-import { retry } from '../utils/retry'
+import { retryAsync } from '../utils/retry'
 
 // Cityページの取得
 export const getCityDom = async (city: CityDb): Promise<JSDOM> => {
   // ページ取得
-  let response
+  let response: fetch.Response
   try {
-    response = await retry(() => fetch(city.url), 3)
+    response = await retryAsync(async () => {
+      const res = await fetch(city.url)
+      return res
+    }, 3)
   } catch (err) {
     console.error(err)
     throw new Error('city fetch error')
