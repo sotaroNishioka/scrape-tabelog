@@ -1,4 +1,4 @@
-export const retryAsync = async<T>(func: () => Promise<T>, count: number): Promise<T> => {
+export const retryAsync = async <T>(func: () => Promise<T>, count: number): Promise<T> => {
   try {
     return await func()
   } catch (e) {

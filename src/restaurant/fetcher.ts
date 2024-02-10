@@ -2,7 +2,10 @@ import { JSDOM } from 'jsdom'
 import fetch from 'node-fetch'
 import { retryAsync } from '../utils/retry'
 
-export const getRestaurantCountDom = async (arg: { cityUrl: string, miniorCategoryCode: string }): Promise<JSDOM> => {
+export const getRestaurantCountDom = async (arg: {
+  cityUrl: string
+  miniorCategoryCode: string
+}): Promise<JSDOM> => {
   let response: fetch.Response
   try {
     response = await retryAsync(async () => {
@@ -18,7 +21,11 @@ export const getRestaurantCountDom = async (arg: { cityUrl: string, miniorCatego
   return dom
 }
 
-export const getRestaurantListDom = async (arg: { cityUrl: string, miniorCategoryCode: string, page: number }): Promise<JSDOM> => {
+export const getRestaurantListDom = async (arg: {
+  cityUrl: string
+  miniorCategoryCode: string
+  page: number
+}): Promise<JSDOM> => {
   let response: fetch.Response
   try {
     response = await retryAsync(async () => {

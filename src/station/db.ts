@@ -4,9 +4,11 @@ import { type StationDb, type Station } from '../types'
 export const insertStationsAsync = async (details: Station[]): Promise<void> => {
   const client = await connect()
   try {
-    const values = details.map((detail) => {
-      return `('${detail.name}', '${detail.url}', '${detail.code}', '${detail.cityId}')`
-    }).join(',')
+    const values = details
+      .map((detail) => {
+        return `('${detail.name}', '${detail.url}', '${detail.code}', '${detail.cityId}')`
+      })
+      .join(',')
     if (values.length === 0) {
       return
     }
@@ -28,7 +30,7 @@ export const getStations = async (): Promise<StationDb[]> => {
   const client = await connect()
   try {
     const sql = 'SELECT id, name, url, code, city_id FROM station'
-    const { rows } = await client.query(sql) as { rows: StationDb[] }
+    const { rows } = (await client.query(sql)) as { rows: StationDb[] }
     return rows
   } catch (err) {
     console.error(err)
@@ -38,7 +40,7 @@ export const getStations = async (): Promise<StationDb[]> => {
   }
 }
 
-export const insertStationCount = async (arg: { count: number, id: string }): Promise<void> => {
+export const insertStationCount = async (arg: { count: number; id: string }): Promise<void> => {
   const client = await connect()
   try {
     await client.query(`

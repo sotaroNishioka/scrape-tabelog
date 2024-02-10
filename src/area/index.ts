@@ -14,10 +14,7 @@ export const asyncUpdateAreas = async (): Promise<void> => {
       const dom = await getPrefecturesDom(x.roma)
       const count = countPrefectureRestaurant(dom)
       const details = getAreaDetails({ dom, id: x.id })
-      await Promise.all([
-        insertAreasAsync(details),
-        insertPrefectureCount({ count, id: x.id })
-      ])
+      await Promise.all([insertAreasAsync(details), insertPrefectureCount({ count, id: x.id })])
       console.log(`insertAreaCount index = ${index + i} is done`)
       console.log(`${x.yomi} has ${count} restaurants`)
       console.log(`${x.yomi} has ${details.length} areas`)

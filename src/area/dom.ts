@@ -2,7 +2,7 @@ import { type JSDOM } from 'jsdom'
 import { type Area } from '../types'
 
 // dom情報からリンクや紐づく市区町村など情報をObjectにする
-export const getAreaDetails = (prefecture: { id: string, dom: JSDOM }): Area[] => {
+export const getAreaDetails = (prefecture: { id: string; dom: JSDOM }): Area[] => {
   const { id, dom } = prefecture
   // タブ取得
   const tab = dom.window.document.body.querySelector('#tabs-panel-balloon-pref-area')
@@ -20,13 +20,15 @@ export const getAreaDetails = (prefecture: { id: string, dom: JSDOM }): Area[] =
     throw new Error('.list-balloon__list-col is not found')
   }
   // リンクの親要素を取得
-  const items = Array.from(cols).map((col) => {
-    const linkItem = col.querySelectorAll('.list-balloon__list-item')
-    if (linkItem === null) {
-      throw new Error('.list-balloon__list-item is not found')
-    }
-    return Array.from(linkItem)
-  }).flat()
+  const items = Array.from(cols)
+    .map((col) => {
+      const linkItem = col.querySelectorAll('.list-balloon__list-item')
+      if (linkItem === null) {
+        throw new Error('.list-balloon__list-item is not found')
+      }
+      return Array.from(linkItem)
+    })
+    .flat()
   const res = items.map((link) => {
     const aDom = link.querySelector('.c-link-arrow')
     if (aDom === null) {
@@ -49,7 +51,7 @@ export const getAreaDetails = (prefecture: { id: string, dom: JSDOM }): Area[] =
       name: nameVal,
       url: hrefVal,
       code,
-      prefectureId: id
+      prefectureId: id,
     }
     return obj
   })

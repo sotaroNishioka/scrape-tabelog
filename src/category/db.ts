@@ -1,12 +1,21 @@
 import { connect } from '../db'
-import { type MediumCategoryDb, type MajorCategoryDb, type MajorCategory, type MinorCategory, type MediumCategory, type MinorCategoryDb } from '../types'
+import {
+  type MediumCategoryDb,
+  type MajorCategoryDb,
+  type MajorCategory,
+  type MinorCategory,
+  type MediumCategory,
+  type MinorCategoryDb,
+} from '../types'
 
 export const insertMajorCategoriesAsync = async (details: MajorCategory[]): Promise<void> => {
   const client = await connect()
   try {
-    const values = details.map((detail) => {
-      return `('${detail.name}', '${detail.code}')`
-    }).join(',')
+    const values = details
+      .map((detail) => {
+        return `('${detail.name}', '${detail.code}')`
+      })
+      .join(',')
     await client.query(`
         INSERT INTO 
           major_category(name, code)
@@ -24,9 +33,11 @@ export const insertMajorCategoriesAsync = async (details: MajorCategory[]): Prom
 export const insertMediumCategoriesAsync = async (details: MediumCategory[]): Promise<void> => {
   const client = await connect()
   try {
-    const values = details.map((detail) => {
-      return `('${detail.name}', '${detail.code}', '${detail.majorCategoryId}')`
-    }).join(',')
+    const values = details
+      .map((detail) => {
+        return `('${detail.name}', '${detail.code}', '${detail.majorCategoryId}')`
+      })
+      .join(',')
     await client.query(`
           INSERT INTO 
             medium_category(name, code, major_category_id)
@@ -44,9 +55,11 @@ export const insertMediumCategoriesAsync = async (details: MediumCategory[]): Pr
 export const insertMinorCategoriesAsync = async (details: MinorCategory[]): Promise<void> => {
   const client = await connect()
   try {
-    const values = details.map((detail) => {
-      return `('${detail.name}', '${detail.code}', '${detail.majorCategoryId}', '${detail.mediumCategoryId}')`
-    }).join(',')
+    const values = details
+      .map((detail) => {
+        return `('${detail.name}', '${detail.code}', '${detail.majorCategoryId}', '${detail.mediumCategoryId}')`
+      })
+      .join(',')
     await client.query(`
             INSERT INTO 
               minor_category(name, code, major_category_id, medium_category_id)

@@ -16,10 +16,7 @@ export const asyncUpdateStations = async (): Promise<void> => {
       const dom = await getCityDom(x)
       const count = countCityRestaurant(dom)
       const details = getStationDetails({ dom, city: x })
-      await Promise.all([
-        insertCityCount({ count, id: x.id }),
-        insertStationsAsync(details)
-      ])
+      await Promise.all([insertCityCount({ count, id: x.id }), insertStationsAsync(details)])
       console.log(`insertCityCount index = ${index + i} is done`)
       console.log(`${x.name} has ${count} restaurants`)
       console.log(`${x.name} has ${details.length} stations`)

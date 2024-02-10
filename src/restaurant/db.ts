@@ -1,12 +1,60 @@
 import { connect } from '../db'
-import { type MajorCategoryDb, type MediumCategoryDb, type MinorCategoryDb, type RestaurantDetail } from '../types'
+import {
+  type RestaurantDetailDb,
+  type MajorCategoryDb,
+  type MediumCategoryDb,
+  type MinorCategoryDb,
+  type RestaurantDetail,
+} from '../types'
 
-export const insertRestaurantsAsync = async (details: RestaurantDetail[]): Promise<void> => {
+export const insertRestaurantsAsync = async (
+  details: RestaurantDetail[]
+): Promise<RestaurantDetailDb[]> => {
   const client = await connect()
 
   try {
-    const values = details.map((_, index) => `($${index * 23 + 1}, $${index * 23 + 2}, $${index * 23 + 3}, $${index * 23 + 4}, $${index * 23 + 5}, $${index * 23 + 6}, $${index * 23 + 7}, $${index * 23 + 8}, $${index * 23 + 9}, $${index * 23 + 10}, $${index * 23 + 11}, $${index * 23 + 12}, $${index * 23 + 13}, $${index * 23 + 14}, $${index * 23 + 15}, $${index * 23 + 16}, $${index * 23 + 17}, $${index * 23 + 18}, $${index * 23 + 19}, $${index * 23 + 20}, $${index * 23 + 21}, $${index * 23 + 22}, $${index * 23 + 23})`).join(',')
-    const params = details.flatMap(obj => [obj.url, obj.areaCode, obj.cityCode, obj.stationCode, obj.name, obj.code, obj.address, obj.mapImageUrl, obj.tel, obj.rate, obj.bookMark, obj.photoCount, obj.isAbleReserve, obj.budget, obj.transportation, obj.holiday, obj.tax, obj.seat, obj.smoking, obj.parking, obj.child, obj.note, obj.homePage])
+    const values = details
+      .map(
+        (_, index) =>
+          `($${index * 23 + 1}, $${index * 23 + 2}, $${index * 23 + 3}, $${
+            index * 23 + 4
+          }, $${index * 23 + 5}, $${index * 23 + 6}, $${index * 23 + 7}, $${
+            index * 23 + 8
+          }, $${index * 23 + 9}, $${index * 23 + 10}, $${index * 23 + 11}, $${
+            index * 23 + 12
+          }, $${index * 23 + 13}, $${index * 23 + 14}, $${index * 23 + 15}, $${
+            index * 23 + 16
+          }, $${index * 23 + 17}, $${index * 23 + 18}, $${index * 23 + 19}, $${
+            index * 23 + 20
+          }, $${index * 23 + 21}, $${index * 23 + 22}, $${index * 23 + 23})`
+      )
+      .join(',')
+
+    const params = details.flatMap((obj) => [
+      obj.url,
+      obj.areaCode,
+      obj.cityCode,
+      obj.stationCode,
+      obj.name,
+      obj.code,
+      obj.address,
+      obj.mapImageUrl,
+      obj.tel,
+      obj.rate,
+      obj.bookMark,
+      obj.photoCount,
+      obj.isAbleReserve,
+      obj.budget,
+      obj.transportation,
+      obj.holiday,
+      obj.tax,
+      obj.seat,
+      obj.smoking,
+      obj.parking,
+      obj.child,
+      obj.note,
+      obj.homePage,
+    ])
 
     const sql = `
     INSERT INTO
@@ -59,9 +107,11 @@ export const insertRestaurantsAsync = async (details: RestaurantDetail[]): Promi
       parking = EXCLUDED.parking,
       child = EXCLUDED.child,
       note = EXCLUDED.note,
-      home_page = EXCLUDED.home_page;
+      home_page = EXCLUDED.home_page
+    RETURNING *
    `
-    await client.query(sql, params)
+    const res = await client.query<RestaurantDetailDb>(sql, params)
+    return res.rows
   } catch (err) {
     console.error(err)
     throw new Error('DB Error')
@@ -70,41 +120,64 @@ export const insertRestaurantsAsync = async (details: RestaurantDetail[]): Promi
   }
 }
 
-export const insertRestaurantCategories = async (
-  arg: {
-    restaurants: RestaurantDetail[]
-    majorCategories: MajorCategoryDb[]
-    mediumCategories: MediumCategoryDb[]
-    minorCategories: MinorCategoryDb[]
-  }
-): Promise<void> => {
-  const { restaurants, majorCategories, mediumCategories, minorCategories } = arg
+export const insertRestaurantCategories = async (arg: {
+  restaurants: RestaurantDetail[]
+  restaurantDbs: RestaurantDetailDb[]
+  majorCategories: MajorCategoryDb[]
+  mediumCategories: MediumCategoryDb[]
+  minorCategories: MinorCategoryDb[]
+}): Promise<void> => {
+  const { restaurants, restaurantDbs, majorCategories, mediumCategories, minorCategories } = arg
   const client = await connect()
   try {
     const params: Array<string | null> = []
     let paramIndex = 1
 
-    // 各オブジェクトのrowsを処理してプレースホルダーを生成し、パラメータをparamsに追加
-    const placeholders = restaurants.flatMap((x) =>
-      x.categoryCodes.map(y => {
-        params.push(x.code, majorCategories.some(x => x.code === y) ? y : null, mediumCategories.some(x => x.code === y) ? y : null, minorCategories.some(x => x.code === y) ? y : null)
-        return `($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`
-      })
-    ).join(', ')
+    const idCategories = restaurants.reduce<Array<{ id: string; categoryCodes: string[] }>>(
+      (accumulator, currentValue) => {
+        const res = restaurantDbs.find((z) => currentValue.url === z.url)
+        if (res === undefined) {
+          return accumulator
+        }
+        return accumulator.concat({
+          id: res.id,
+          categoryCodes: currentValue.categoryCodes,
+        })
+      },
+      []
+    )
+
+    const placeholders = idCategories
+      .flatMap((x) =>
+        x.categoryCodes.map((y) => {
+          const majorCategoryId = majorCategories.find((z) => z.code === y)?.id
+          const mediumCategoryId = mediumCategories.find((z) => z.code === y)?.id
+          const minorCategoryId = minorCategories.find((z) => z.code === y)?.id
+          params.push(
+            x.id,
+            majorCategoryId ?? null,
+            mediumCategoryId ?? null,
+            minorCategoryId ?? null
+          )
+          return `($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`
+        })
+      )
+      .join(', ')
+
     const sql = `
       INSERT INTO
         restaurant_category (
-          restaurant_code,
-          major_category_code,
-          medium_category_code,
-          minor_category_code
+          restaurant_id,
+          major_category_id,
+          medium_category_id,
+          minor_category_id
         )
       VALUES ${placeholders}
       ON CONFLICT (
-        restaurant_code,
-        major_category_code,
-        medium_category_code,
-        minor_category_code
+        restaurant_id,
+        major_category_id,
+        medium_category_id,
+        minor_category_id
       )
       DO NOTHING
     `

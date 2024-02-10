@@ -12,19 +12,26 @@ export const asyncUpdateRestaurant = async (): Promise<void> => {
     getCities(),
     getAllMiniorCategory(),
     getAllMediumCategory(),
-    getAllMajorCategory()
+    getAllMajorCategory(),
   ])
 
   for (const city of cities) {
     for (const category of minorCategories) {
-      const countDom = await getRestaurantCountDom({ cityUrl: city.url, miniorCategoryCode: category.code })
+      const countDom = await getRestaurantCountDom({
+        cityUrl: city.url,
+        miniorCategoryCode: category.code,
+      })
       const count = getRestaurantCount(countDom)
       if (count === 0) {
         continue
       }
       const pageArr = Array.from({ length: Math.ceil(count / 20) }, (_, i) => i + 1)
       for (const page of pageArr) {
-        const pageDom = await getRestaurantListDom({ cityUrl: city.url, miniorCategoryCode: category.code, page })
+        const pageDom = await getRestaurantListDom({
+          cityUrl: city.url,
+          miniorCategoryCode: category.code,
+          page,
+        })
         const restaurantUrls = getRestaurantUrls(pageDom)
         const asyncRestaurantDetails = restaurantUrls.map(async (url) => {
           const res = await retryAsync<RestaurantDetail>(async () => {
@@ -35,12 +42,13 @@ export const asyncUpdateRestaurant = async (): Promise<void> => {
           return res
         })
         const restaurantDetails = await Promise.all(asyncRestaurantDetails)
-        await insertRestaurantsAsync(restaurantDetails)
+        const restaurantDetailsDb = await insertRestaurantsAsync(restaurantDetails)
         await insertRestaurantCategories({
           restaurants: restaurantDetails,
+          restaurantDbs: restaurantDetailsDb,
           majorCategories,
           mediumCategories,
-          minorCategories
+          minorCategories,
         })
       }
     }

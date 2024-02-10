@@ -4,9 +4,11 @@ import { connect } from '../db'
 export const insertAreasAsync = async (details: Area[]): Promise<void> => {
   const client = await connect()
   try {
-    const values = details.map((detail) => {
-      return `('${detail.name}', '${detail.url}', '${detail.code}', '${detail.prefectureId}')`
-    }).join(',')
+    const values = details
+      .map((detail) => {
+        return `('${detail.name}', '${detail.url}', '${detail.code}', '${detail.prefectureId}')`
+      })
+      .join(',')
     await client.query(`
         INSERT INTO 
           area(name, url, code, prefecture_id)
@@ -25,7 +27,7 @@ export const getAreas = async (): Promise<AreaDb[]> => {
   const client = await connect()
   try {
     const sql = 'SELECT id, name, url, code, prefecture_id FROM area'
-    const { rows } = await client.query(sql) as { rows: AreaDb[] }
+    const { rows } = (await client.query(sql)) as { rows: AreaDb[] }
     return rows
   } catch (err) {
     console.error(err)
@@ -35,7 +37,7 @@ export const getAreas = async (): Promise<AreaDb[]> => {
   }
 }
 
-export const insertAreaCount = async (arg: { count: number, id: string }): Promise<void> => {
+export const insertAreaCount = async (arg: { count: number; id: string }): Promise<void> => {
   const client = await connect()
   try {
     await client.query(`

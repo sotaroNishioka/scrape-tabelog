@@ -28,34 +28,44 @@ export const getRestaurantCount = (dom: JSDOM): number => {
 
 export const getRestaurantUrls = (dom: JSDOM): string[] => {
   const rstList = Array.from(dom.window.document.body.querySelectorAll('.rstlist-info'))[0]
-  const restaurantUrls = Array.from(rstList.querySelectorAll('.cpy-rst-name'))
-    .map((element) => {
-      const anchor = element as HTMLAnchorElement
-      return anchor.href
-    })
+  const restaurantUrls = Array.from(rstList.querySelectorAll('.cpy-rst-name')).map((element) => {
+    const anchor = element as HTMLAnchorElement
+    return anchor.href
+  })
   return restaurantUrls
 }
 
 const getCategoryCodes = (dom: JSDOM): string[] | null => {
-  const genreItem = Array.from(dom.window.document.body.querySelectorAll('.rdheader-subinfo__item')).find((element) => {
+  const genreItem = Array.from(
+    dom.window.document.body.querySelectorAll('.rdheader-subinfo__item')
+  ).find((element) => {
     const title = element.querySelector('.rdheader-subinfo__item-title')?.textContent
-    return (title != null) && title.includes('ジャンル')
+    return title != null && title.includes('ジャンル')
   })
   if (genreItem === undefined) {
     return null
   }
-  const result = Array.from(genreItem.querySelectorAll('.linktree__parent-target')).map((element) => {
-    const anchor = element as HTMLAnchorElement
-    const splited = anchor.href.split('/')
-    return splited[splited.length - 2]
-  })
+  const result = Array.from(genreItem.querySelectorAll('.linktree__parent-target')).map(
+    (element) => {
+      const anchor = element as HTMLAnchorElement
+      const splited = anchor.href.split('/')
+      return splited[splited.length - 2]
+    }
+  )
   return result
 }
 
-const getBuget = (dom: JSDOM): { lunch: { min: number, max: number } | null, dinner: { min: number, max: number } | null } | null => {
-  const budgetItem = Array.from(dom.window.document.body.querySelectorAll('.rdheader-subinfo__item')).find((element) => {
+const getBuget = (
+  dom: JSDOM
+): {
+  lunch: { min: number; max: number } | null
+  dinner: { min: number; max: number } | null
+} | null => {
+  const budgetItem = Array.from(
+    dom.window.document.body.querySelectorAll('.rdheader-subinfo__item')
+  ).find((element) => {
     const title = element.querySelector('.rdheader-subinfo__item-title')?.textContent
-    return (title != null) && title.includes('予算')
+    return title != null && title.includes('予算')
   })
   if (budgetItem === undefined) {
     return null
@@ -66,26 +76,38 @@ const getBuget = (dom: JSDOM): { lunch: { min: number, max: number } | null, din
   const lunchRange = lunch === '-' || lunch === null ? null : lunch.split('～')
   const dinnerRange = dinner === '-' || dinner === null ? null : dinner.split('～')
   const result = {
-    lunch: lunchRange === null
-      ? null
-      : {
-          min: isNaN(Number(lunchRange?.[0]?.replace(/[^0-9]/g, ''))) ? 0 : Number(lunchRange?.[0]?.replace(/[^0-9]/g, '')),
-          max: isNaN(Number(lunchRange?.[1]?.replace(/[^0-9]/g, ''))) ? 0 : Number(lunchRange?.[1]?.replace(/[^0-9]/g, ''))
-        },
-    dinner: dinnerRange === null
-      ? null
-      : {
-          min: isNaN(Number(dinnerRange?.[0]?.replace(/[^0-9]/g, ''))) ? 0 : Number(dinnerRange?.[0]?.replace(/[^0-9]/g, '')),
-          max: isNaN(Number(dinnerRange?.[1]?.replace(/[^0-9]/g, ''))) ? 0 : Number(dinnerRange?.[1]?.replace(/[^0-9]/g, ''))
-        }
+    lunch:
+      lunchRange === null
+        ? null
+        : {
+            min: isNaN(Number(lunchRange?.[0]?.replace(/[^0-9]/g, '')))
+              ? 0
+              : Number(lunchRange?.[0]?.replace(/[^0-9]/g, '')),
+            max: isNaN(Number(lunchRange?.[1]?.replace(/[^0-9]/g, '')))
+              ? 0
+              : Number(lunchRange?.[1]?.replace(/[^0-9]/g, '')),
+          },
+    dinner:
+      dinnerRange === null
+        ? null
+        : {
+            min: isNaN(Number(dinnerRange?.[0]?.replace(/[^0-9]/g, '')))
+              ? 0
+              : Number(dinnerRange?.[0]?.replace(/[^0-9]/g, '')),
+            max: isNaN(Number(dinnerRange?.[1]?.replace(/[^0-9]/g, '')))
+              ? 0
+              : Number(dinnerRange?.[1]?.replace(/[^0-9]/g, '')),
+          },
   }
   return result
 }
 
 const getStationCode = (dom: JSDOM): string | null => {
-  const stationItem = Array.from(dom.window.document.body.querySelectorAll('.rdheader-subinfo__item')).find((element) => {
+  const stationItem = Array.from(
+    dom.window.document.body.querySelectorAll('.rdheader-subinfo__item')
+  ).find((element) => {
     const title = element.querySelector('.rdheader-subinfo__item-title')?.textContent
-    return (title != null) && title.includes('最寄り駅')
+    return title != null && title.includes('最寄り駅')
   })
   if (stationItem === undefined) {
     return null
@@ -96,7 +118,7 @@ const getStationCode = (dom: JSDOM): string | null => {
   return stationCode ?? null
 }
 
-const convertTableItems = (dom: JSDOM): Array<{ title: string, dom: Element | null }> => {
+const convertTableItems = (dom: JSDOM): Array<{ title: string; dom: Element | null }> => {
   const tables = dom.window.document.body.querySelectorAll('.rstinfo-table__table')
   const tableItems = Array.from(tables).map((table) => {
     const rows = Array.from(table.querySelectorAll('tr'))
@@ -117,30 +139,55 @@ export const getRestaurantDetail = (dom: JSDOM, url: string): RestaurantDetail =
   const cityCode = url.split('/')[5]
   const restaurantCode = url.split('/')[6]
   const stationCode = getStationCode(dom)
-  const name = dom.window.document.body.querySelector('.rdheader-rstname')?.querySelector('.display-name')?.querySelector('span')?.textContent
+  const name = dom.window.document.body
+    .querySelector('.rdheader-rstname')
+    ?.querySelector('.display-name')
+    ?.querySelector('span')?.textContent
   const tel = dom.window.document.body.querySelector('.rstinfo-table__tel-num')?.textContent
   const address = dom.window.document.body.querySelector('.rstinfo-table__address')?.textContent
-  const rate = dom.window.document.body.querySelector('.rdheader-rating__score-val-dtl')?.textContent
-  const review = dom.window.document.body.querySelector('.rdheader-rating__review-target')?.querySelector('.num')?.textContent
-  const bookMark = dom.window.document.body.querySelector('.rdheader-rating__hozon-target')?.querySelector('.num')?.textContent
-  const photoCount = dom.window.document.body.querySelector('#rdnavi-photo')?.querySelector('.rstdtl-navi__total-count')?.querySelector('strong')?.textContent
-  const isAbleReserve = dom.window.document.body.querySelector('.rstinfo-table__reserve-status')?.textContent === '予約可'
+  const rate = dom.window.document.body.querySelector(
+    '.rdheader-rating__score-val-dtl'
+  )?.textContent
+  const review = dom.window.document.body
+    .querySelector('.rdheader-rating__review-target')
+    ?.querySelector('.num')?.textContent
+  const bookMark = dom.window.document.body
+    .querySelector('.rdheader-rating__hozon-target')
+    ?.querySelector('.num')?.textContent
+  const photoCount = dom.window.document.body
+    .querySelector('#rdnavi-photo')
+    ?.querySelector('.rstdtl-navi__total-count')
+    ?.querySelector('strong')?.textContent
+  const isAbleReserve =
+    dom.window.document.body.querySelector('.rstinfo-table__reserve-status')?.textContent ===
+    '予約可'
   const categoryCodes = getCategoryCodes(dom)
   const budget = getBuget(dom)
-  const mapImageUrl = dom.window.document.body.querySelector('.rstinfo-table__map-image')?.getAttribute('data-original')
+  const mapImageUrl = dom.window.document.body
+    .querySelector('.rstinfo-table__map-image')
+    ?.getAttribute('data-original')
 
   // その他情報
   const tableItems = convertTableItems(dom)
   const transportation = tableItems.find((item) => item.title === '交通手段')?.dom?.textContent
-  const openingHours = tableItems.find((item) => item.title === '営業時間')?.dom?.querySelectorAll('.rstinfo-table__subject-text')[0]?.textContent
-  const holiday = tableItems.find((item) => item.title === '営業時間')?.dom?.querySelectorAll('.rstinfo-table__subject-text')[1]?.textContent
+  const openingHours = tableItems
+    .find((item) => item.title === '営業時間')
+    ?.dom?.querySelectorAll('.rstinfo-table__subject-text')[0]?.textContent
+  const holiday = tableItems
+    .find((item) => item.title === '営業時間')
+    ?.dom?.querySelectorAll('.rstinfo-table__subject-text')[1]?.textContent
   const tax = tableItems.find((item) => item.title === 'サービス料・チャージ')?.dom?.textContent
-  const seat = tableItems.find((item) => item.title === '席数')?.dom?.querySelectorAll('p')[0]?.textContent?.replace(/席/g, '')
+  const seat = tableItems
+    .find((item) => item.title === '席数')
+    ?.dom?.querySelectorAll('p')[0]
+    ?.textContent?.replace(/席/g, '')
   const smoking = tableItems.find((item) => item.title === '禁煙・喫煙')?.dom?.textContent
   const parking = tableItems.find((item) => item.title === '駐車場')?.dom?.textContent
   const child = tableItems.find((item) => item.title === 'お子様連れ')?.dom?.textContent
   const note = tableItems.find((item) => item.title === '備考')?.dom?.textContent
-  const homepage = tableItems.find((item) => item.title === 'ホームページ')?.dom?.querySelector('a')?.href
+  const homepage = tableItems
+    .find((item) => item.title === 'ホームページ')
+    ?.dom?.querySelector('a')?.href
 
   const result = {
     url,
@@ -169,7 +216,7 @@ export const getRestaurantDetail = (dom: JSDOM, url: string): RestaurantDetail =
     parking: parking ?? null,
     child: child ?? null,
     note: note ?? null,
-    homePage: homepage ?? null
+    homePage: homepage ?? null,
   }
   return result
 }

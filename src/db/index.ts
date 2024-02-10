@@ -1,7 +1,7 @@
 import { Client } from 'pg'
 import 'dotenv/config'
 
-export async function connect (): Promise<Client> {
+export async function connect(): Promise<Client> {
   let client: Client
   try {
     client = new Client({
@@ -9,7 +9,7 @@ export async function connect (): Promise<Client> {
       port: Number(process.env.DB_PORT),
       database: process.env.DB_DATABASE,
       user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD
+      password: process.env.DB_PASSWORD,
     })
   } catch (err) {
     console.error(err)

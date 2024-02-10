@@ -22,13 +22,16 @@ const getMajorFromArea = (area: Element): MajorCategory => {
   const code = link.split('/').slice(-2)[0]
   return {
     name,
-    code
+    code,
   }
 }
 
-const getMediumCategoriesFromMedium = (medium: Element): {
+const getMediumCategoriesFromMedium = (
+  medium: Element
+): {
   name: string
-  code: string } => {
+  code: string
+} => {
   const val = medium.querySelector('.rst-janrelst__item2')
   if (val === null) {
     throw new Error('mediumCategory val is not found')
@@ -48,7 +51,7 @@ const getMediumCategoriesFromMedium = (medium: Element): {
   const code = link.split('/').slice(-2)[0]
   return {
     name,
-    code
+    code,
   }
 }
 
@@ -78,7 +81,7 @@ export const getMediumCategories = async (dom: JSDOM): Promise<MediumCategory[]>
         const mediumCategory = getMediumCategoriesFromMedium(y)
         return {
           ...mediumCategory,
-          majorCategoryId
+          majorCategoryId,
         }
       })
     })
@@ -135,7 +138,7 @@ export const getMinorCategories = async (dom: JSDOM): Promise<MinorCategory[]> =
               name,
               code,
               majorCategoryId,
-              mediumCategoryId
+              mediumCategoryId,
             }
           })
         })

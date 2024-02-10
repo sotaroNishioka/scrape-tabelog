@@ -1,6 +1,10 @@
 import { getCategoryDom } from './fetch'
 import { getMajorCategories, getMediumCategories, getMinorCategories } from './dom'
-import { insertMajorCategoriesAsync, insertMediumCategoriesAsync, insertMinorCategoriesAsync } from './db'
+import {
+  insertMajorCategoriesAsync,
+  insertMediumCategoriesAsync,
+  insertMinorCategoriesAsync,
+} from './db'
 
 export const asyncUpdateCategory = async (): Promise<void> => {
   console.log('start asyncUpdateCategory')

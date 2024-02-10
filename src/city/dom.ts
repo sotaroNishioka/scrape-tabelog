@@ -1,19 +1,21 @@
 import { type JSDOM } from 'jsdom'
 import { type AreaDb, type City } from '../types'
 
-export const getCityDetails = (arg: { dom: JSDOM, area: AreaDb }): City[] => {
+export const getCityDetails = (arg: { dom: JSDOM; area: AreaDb }): City[] => {
   const { dom, area } = arg
   // エリアから探すのタブを取得
   const tab = dom.window.document.body.querySelector('#tabs-panel-balloon-pref-area')
   if (tab === null) {
     const sublist = dom.window.document.body.querySelectorAll('.list-balloon__sub-list')
-    const items = Array.from(sublist).map((sub) => {
-      const linkItem = sub.querySelectorAll('.list-balloon__sub-list-item')
-      if (linkItem === null) {
-        throw new Error('.list-balloon__sub-list-item is not found')
-      }
-      return Array.from(linkItem)
-    }).flat()
+    const items = Array.from(sublist)
+      .map((sub) => {
+        const linkItem = sub.querySelectorAll('.list-balloon__sub-list-item')
+        if (linkItem === null) {
+          throw new Error('.list-balloon__sub-list-item is not found')
+        }
+        return Array.from(linkItem)
+      })
+      .flat()
     const res = getCityLinkVal(items, area)
     return res
   }
@@ -27,13 +29,15 @@ export const getCityDetails = (arg: { dom: JSDOM, area: AreaDb }): City[] => {
   if (cols === null) {
     throw new Error('.list-balloon__list-col is not found')
   }
-  const items = Array.from(cols).map((col) => {
-    const linkItem = col.querySelectorAll('.list-balloon__list-item')
-    if (linkItem === null) {
-      throw new Error('.list-balloon__list-item is not found')
-    }
-    return Array.from(linkItem)
-  }).flat()
+  const items = Array.from(cols)
+    .map((col) => {
+      const linkItem = col.querySelectorAll('.list-balloon__list-item')
+      if (linkItem === null) {
+        throw new Error('.list-balloon__list-item is not found')
+      }
+      return Array.from(linkItem)
+    })
+    .flat()
   const res = getCityLinkVal(items, area)
   return res
 }
@@ -68,7 +72,7 @@ const getCityLinkVal = (linkContents: Element[], area: AreaDb): City[] => {
       url: hrefVal,
       code,
       prefectureId: area.prefecture_id,
-      areaId: area.id
+      areaId: area.id,
     }
     return obj
   })

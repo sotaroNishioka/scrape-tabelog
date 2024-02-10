@@ -104,7 +104,10 @@ export interface RestaurantDetail {
   bookMark: number | null
   photoCount: number | null
   isAbleReserve: boolean
-  budget: { lunch: { min: number, max: number } | null, dinner: { min: number, max: number } | null } | null
+  budget: {
+    lunch: { min: number; max: number } | null
+    dinner: { min: number; max: number } | null
+  } | null
   categoryCodes: string[]
   transportation: string | null
   openingHours: string | null
@@ -116,4 +119,36 @@ export interface RestaurantDetail {
   child: string | null
   note: string | null
   homePage: string | null
+}
+
+export interface RestaurantDetailDb {
+  id: string
+  url: string
+  prefectureCode: string
+  area_code: string
+  city_code: string
+  code: string
+  station_code: string | null
+  name: string | null
+  address: string | null
+  mapimageurl: string | null
+  tel: string | null
+  rate: number | null
+  review: number | null
+  book_mark: number | null
+  photo_count: number | null
+  is_able_reserve: boolean
+  budget: {
+    lunch: { min: number; max: number } | null
+    dinner: { min: number; max: number } | null
+  } | null
+  transportation: string | null
+  holiday: string | null
+  tax: string | null
+  seat: number | null
+  smoking: string | null
+  parking: string | null
+  child: string | null
+  note: string | null
+  home_page: string | null
 }
